@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="lastUpdateTime_text" type="id">UnknownTime</item>
+    <item name="start_updates_button" type="id">Start Updates</item>
+    <item name="stop_updates_button" type="id">Stop Updates</item>
+    <item name="last_update_time_text" type="id">Last Updated Time</item>
+    <item name="location_address_view" type="id">Address View</item>
+</resources>
