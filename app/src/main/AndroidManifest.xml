@@ -40,7 +40,7 @@ limitations under the License.
         service, even when using an explicit intent. -->
         <service
             android:name="com.google.android.visualimprints.services.FetchAddressIntentService"
-            android:exported="false"/>
+            android:exported="true"/>
     </application>
     <!--
     Android has two location request settings: {@code ACCESS_COARSE_LOCATION} and

@@ -6,6 +6,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.ResultReceiver;
 import android.text.TextUtils;
 import android.util.Log;
@@ -69,7 +70,7 @@ public class FetchAddressIntentService extends IntentService {
         if (location == null) {
             errorMessage = getString(R.string.no_location_data_provided);
             Log.wtf(TAG, errorMessage);
-            deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
+            deliverResultToReceiver(Constants.FAILURE_RESULT, null, errorMessage);
             return;
         }
 
@@ -115,35 +116,24 @@ public class FetchAddressIntentService extends IntentService {
                 errorMessage = getString(R.string.no_address_found);
                 Log.e(TAG, errorMessage);
             }
-            deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
+            deliverResultToReceiver(Constants.FAILURE_RESULT, null, errorMessage);
         } else {
-            Address address = addresses.get(0);
-            ArrayList<String> addressFragments = new ArrayList<String>();
-
-            // Fetch the address lines using {@code getAddressLine},
-            // join them, and send them to the thread. The {@link android.location.address}
-            // class provides other options for fetching address details that you may prefer
-            // to use. Here are some examples:
-            // getLocality() ("Mountain View", for example)
-            // getAdminArea() ("CA", for example)
-            // getPostalCode() ("94043", for example)
-            // getCountryCode() ("US", for example)
-            // getCountryName() ("United States", for example)
-            for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
-                addressFragments.add(address.getAddressLine(i));
-            }
             Log.i(TAG, getString(R.string.address_found));
-            deliverResultToReceiver(Constants.SUCCESS_RESULT,
-                    TextUtils.join(System.getProperty("line.separator"), addressFragments));
+            Address address = addresses.get(0);
+            deliverResultToReceiver(Constants.SUCCESS_RESULT, address, "");
         }
     }
 
     /**
      * Sends a resultCode and message to the receiver.
      */
-    private void deliverResultToReceiver(int resultCode, String message) {
+    private void deliverResultToReceiver(int resultCode, Address address, String message) {
         Bundle bundle = new Bundle();
-        bundle.putString(Constants.RESULT_DATA_KEY, message);
+        if (address != null) {
+            bundle.putParcelable(Constants.RESULT_ADDRESS, address);
+        } else {
+            bundle.putString(Constants.RESULT_DATA_KEY, message);
+        }
         mReceiver.send(resultCode, bundle);
     }
 }

@@ -2,7 +2,10 @@ package com.google.android.visualimprints;
 
 import android.location.Address;
 import android.location.Location;
-import android.text.format.Time;
+import android.text.TextUtils;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Custom data structure representing all of the information relating to a particular location.
@@ -14,12 +17,14 @@ import android.text.format.Time;
 public class GeospatialPin {
     private Address address;
     private Location location;
-    private Time arrivalTime;
+    private Date arrivalTime;
+    private Date duration;
 
 
     public GeospatialPin(Location location) {
         this.location = location;
-        this.arrivalTime = new Time();
+        this.arrivalTime = new Date();
+        this.duration = new Date();
     }
 
     /**
@@ -32,14 +37,29 @@ public class GeospatialPin {
     /**
      * @return the {Address} of the pin
      */
-    public Address getAddress() {
-        return address;
-    }
+    public Address getAddress() { return address; }
 
     /**
-     * @return the {Time} the pin was created
+     * Sets the address for the pin.
+     * @param address the {Address} object for the geospatial pin.
      */
-    public Time getArrivalTime() {
-        return arrivalTime;
+    public void setAddress(Address address) { this.address = address; }
+
+    /**
+     * @return the {Date} the pin was created
+     */
+    public Date getArrivalTime() { return arrivalTime; }
+
+    /**
+     * @return the {Date} the amount of time spent at the pin
+     */
+    public Date getDuration() { return duration; }
+
+    public String getReadableAddress() {
+        ArrayList<String> addressFragments = new ArrayList<String>();
+        for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
+            addressFragments.add(address.getAddressLine(i));
+        }
+        return TextUtils.join(System.getProperty("line.separator"), addressFragments);
     }
 }

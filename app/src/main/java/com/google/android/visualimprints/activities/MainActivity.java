@@ -17,10 +17,12 @@
 package com.google.android.visualimprints.activities;
 
 import android.content.Intent;
+import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.os.ResultReceiver;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -36,10 +38,10 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.visualimprints.Constants;
+import com.google.android.visualimprints.GeospatialPin;
 import com.google.android.visualimprints.services.FetchAddressIntentService;
 
 import java.text.DateFormat;
-import java.util.Date;
 
 /**
  * Getting Location Updates.
@@ -59,8 +61,6 @@ public class MainActivity extends ActionBarActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
     protected static final String TAG = "location-updates-sample";
-    protected static final String LOCATION_ADDRESS_KEY = "location-address";
-    protected static final String ADDRESS_REQUESTED_KEY = "address-request-pending";
 
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
@@ -77,7 +77,7 @@ public class MainActivity extends ActionBarActivity implements
     // Keys for storing activity state in the Bundle.
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     protected final static String LOCATION_KEY = "location-key";
-    protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
+    protected static final String LOCATION_ADDRESS_KEY = "location-address";
 
     /**
      * Provides the entry point to Google Play services.
@@ -90,9 +90,9 @@ public class MainActivity extends ActionBarActivity implements
     protected LocationRequest mLocationRequest;
 
     /**
-     * Represents a geographical location.
+     * Represents a current location-based point of interest.
      */
-    protected Location mCurrentLocation;
+    protected GeospatialPin mCurrentPin;
 
     // UI Widgets.
     protected TextView mLastUpdateTimeTextView;
@@ -101,35 +101,14 @@ public class MainActivity extends ActionBarActivity implements
     protected TextView mLocationAddressTextView;
 
     /**
-     * Tracks whether the user has requested an address. Becomes true when the user requests an
-     * address and false when the address (or an error message) is delivered.
-     * The user requests an address by pressing the Fetch Address button. This may happen
-     * before GoogleApiClient connects. This activity uses this boolean to keep track of the
-     * user's intent. If the value is true, the activity tries to fetch the address as soon as
-     * GoogleApiClient connects.
-     */
-    protected boolean mAddressRequested;
-
-    /**
-     * Tracks the status of the location updates request. Value changes when the user presses the
-     * Start Updates and Stop Updates buttons.
+     * Tracks the status of the location updates request.
      */
     protected Boolean mRequestingLocationUpdates;
-
-    /**
-     * The formatted location address.
-     */
-    protected String mAddressOutput;
 
     /**
      * Receiver registered with this activity to get the response from FetchAddressIntentService.
      */
     private AddressResultReceiver mResultReceiver;
-
-    /**
-     * Time when the location was updated represented as a String.
-     */
-    protected String mLastUpdateTime;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -145,10 +124,6 @@ public class MainActivity extends ActionBarActivity implements
         mLocationAddressTextView = (TextView) findViewById(R.id.location_address_text);
 
         mRequestingLocationUpdates = true;
-        mLastUpdateTime = "";
-
-        // Set defaults, then update using values stored in the Bundle.
-        mAddressOutput = "No address found";
 
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
@@ -178,19 +153,15 @@ public class MainActivity extends ActionBarActivity implements
             if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
                 // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
                 // is not null.
-                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
-            }
-
-            // Update the value of mLastUpdateTime from the Bundle and update the UI.
-            if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
-                mLastUpdateTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
+                Location currentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+                mCurrentPin = new GeospatialPin(currentLocation);
             }
 
             // Check savedInstanceState to see if the location address string was previously found
             // and stored in the Bundle. If it was found, display the address string in the UI.
             if (savedInstanceState.keySet().contains(LOCATION_ADDRESS_KEY)) {
-                mAddressOutput = savedInstanceState.getString(LOCATION_ADDRESS_KEY);
-                displayAddressOutput();
+                String address = savedInstanceState.getString(LOCATION_ADDRESS_KEY);
+                //TODO(clidwin): Handle showing this in the UI
             }
 
             updateUI();
@@ -203,7 +174,7 @@ public class MainActivity extends ActionBarActivity implements
      */
     public void fetchAddressButtonHandler(View view) {
         // We only start the service to fetch the address if GoogleApiClient is connected.
-        if (mGoogleApiClient.isConnected() && mCurrentLocation != null) {
+        if (mGoogleApiClient.isConnected() && mCurrentPin != null) {
             startIntentService();
         }
         // If GoogleApiClient isn't connected, we process the user's request by setting
@@ -225,7 +196,7 @@ public class MainActivity extends ActionBarActivity implements
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
 
         // Pass the location data as an extra to the service.
-        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mCurrentLocation);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mCurrentPin.getLocation());
 
         // Start the service. If the service isn't already running, it is instantiated and started
         // (creating a process for it if needed); if it is running then it remains running. The
@@ -290,9 +261,10 @@ public class MainActivity extends ActionBarActivity implements
      * Updates the latitude, the longitude, and the last location time in the UI.
      */
     private void updateUI() {
-        mLatitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
-        mLongitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
-        mLastUpdateTimeTextView.setText(mLastUpdateTime);
+        mLatitudeTextView.setText(String.valueOf(mCurrentPin.getLocation().getLatitude()));
+        mLongitudeTextView.setText(String.valueOf(mCurrentPin.getLocation().getLongitude()));
+        mLastUpdateTimeTextView.setText(
+                DateFormat.getTimeInstance().format(mCurrentPin.getArrivalTime()));
     }
 
     /**
@@ -358,10 +330,11 @@ public class MainActivity extends ActionBarActivity implements
         // user launches the activity,
         // moves to a new location, and then changes the device orientation, the original location
         // is displayed as the activity is re-created.
-        if (mCurrentLocation == null) {
-            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        if (mCurrentPin == null) {
+            Location newLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-            if (mCurrentLocation != null) {
+            if (newLocation != null) {
+                mCurrentPin = new GeospatialPin(newLocation);
                 // Determine whether a Geocoder is available.
                 if (!Geocoder.isPresent()) {
                     Toast.makeText(this, R.string.no_geocoder_available, Toast.LENGTH_LONG).show();
@@ -374,9 +347,6 @@ public class MainActivity extends ActionBarActivity implements
                 // user has requested an address, since we now have a connection to GoogleApiClient.
                 startIntentService();
             }
-
-
-            mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
             updateUI();
         }
 
@@ -391,8 +361,7 @@ public class MainActivity extends ActionBarActivity implements
      */
     @Override
     public void onLocationChanged(Location location) {
-        mCurrentLocation = location;
-        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+        mCurrentPin = new GeospatialPin(location);
         fetchAddressButtonHandler(mLocationAddressTextView);
         updateUI();
         showToast(getResources().getString(R.string.location_updated_message));
@@ -419,9 +388,7 @@ public class MainActivity extends ActionBarActivity implements
      */
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
-        savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
-        savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
-        savedInstanceState.putString(LOCATION_ADDRESS_KEY, mAddressOutput);
+        savedInstanceState.putParcelable(LOCATION_KEY, mCurrentPin.getLocation());
         super.onSaveInstanceState(savedInstanceState);
     }
 
@@ -440,12 +407,16 @@ public class MainActivity extends ActionBarActivity implements
         protected void onReceiveResult(int resultCode, Bundle resultData) {
 
             // Display the address string or an error message sent from the intent service.
-            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
-            displayAddressOutput();
 
             // Show a toast message if an address was found.
             if (resultCode == Constants.SUCCESS_RESULT) {
                 showToast(getResources().getString(R.string.address_found));
+                Address address = resultData.getParcelable(Constants.RESULT_ADDRESS);
+                mCurrentPin.setAddress(address);
+                mLocationAddressTextView.setText(mCurrentPin.getReadableAddress());
+            } else {
+                showToast(resultData.getString(Constants.RESULT_DATA_KEY));
+                mLocationAddressTextView.setText(resultData.getString(Constants.RESULT_DATA_KEY));
             }
 
             updateUI();
@@ -457,14 +428,5 @@ public class MainActivity extends ActionBarActivity implements
      */
     protected void showToast(String text) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
-    }
-
-    /**
-     * Updates the address in the UI.
-     */
-    protected void displayAddressOutput() {
-        if (mAddressOutput != null) {
-            mLocationAddressTextView.setText(mAddressOutput);
-        }
     }
 }
