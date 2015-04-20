@@ -18,13 +18,13 @@ public class GeospatialPin {
     private Address address;
     private Location location;
     private Date arrivalTime;
-    private Date duration;
+    private long duration;
 
 
     public GeospatialPin(Location location) {
         this.location = location;
         this.arrivalTime = new Date();
-        this.duration = new Date();
+        this.duration = 0;
     }
 
     /**
@@ -51,9 +51,9 @@ public class GeospatialPin {
     public Date getArrivalTime() { return arrivalTime; }
 
     /**
-     * @return the {Date} the amount of time spent at the pin
+     * @return the the amount of time in milliseconds spent at the pin
      */
-    public Date getDuration() { return duration; }
+    public long getDuration() { return duration; }
 
     public String getReadableAddress() {
         ArrayList<String> addressFragments = new ArrayList<String>();

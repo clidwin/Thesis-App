@@ -6,16 +6,13 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Parcel;
 import android.os.ResultReceiver;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.android.visualimprints.Constants;
 import com.google.android.visualimprints.activities.R;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -130,7 +127,7 @@ public class FetchAddressIntentService extends IntentService {
     private void deliverResultToReceiver(int resultCode, Address address, String message) {
         Bundle bundle = new Bundle();
         if (address != null) {
-            bundle.putParcelable(Constants.RESULT_ADDRESS, address);
+            bundle.putParcelable(Constants.RESULT_ADDRESS_KEY, address);
         } else {
             bundle.putString(Constants.RESULT_DATA_KEY, message);
         }

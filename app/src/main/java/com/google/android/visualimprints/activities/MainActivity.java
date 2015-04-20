@@ -22,7 +22,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.os.ResultReceiver;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -40,6 +39,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.visualimprints.Constants;
 import com.google.android.visualimprints.GeospatialPin;
 import com.google.android.visualimprints.services.FetchAddressIntentService;
+import com.google.android.visualimprints.storage.DatabaseAdapter;
 
 import java.text.DateFormat;
 
@@ -110,6 +110,8 @@ public class MainActivity extends ActionBarActivity implements
      */
     private AddressResultReceiver mResultReceiver;
 
+    private DatabaseAdapter dbAdapter;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,8 +133,13 @@ public class MainActivity extends ActionBarActivity implements
         // Kick off the process of building a GoogleApiClient and requesting the LocationServices
         // API.
         buildGoogleApiClient();
+        openDatabase();
     }
 
+    private void openDatabase() {
+        dbAdapter = new DatabaseAdapter(this);
+        dbAdapter.open();
+    }
     /**
      * Updates fields based on data stored in the bundle.
      *
@@ -411,7 +418,7 @@ public class MainActivity extends ActionBarActivity implements
             // Show a toast message if an address was found.
             if (resultCode == Constants.SUCCESS_RESULT) {
                 showToast(getResources().getString(R.string.address_found));
-                Address address = resultData.getParcelable(Constants.RESULT_ADDRESS);
+                Address address = resultData.getParcelable(Constants.RESULT_ADDRESS_KEY);
                 mCurrentPin.setAddress(address);
                 mLocationAddressTextView.setText(mCurrentPin.getReadableAddress());
             } else {
