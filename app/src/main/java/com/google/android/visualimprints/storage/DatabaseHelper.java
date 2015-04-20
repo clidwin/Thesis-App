@@ -1,37 +1,39 @@
 package com.google.android.visualimprints.storage;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
 
 /**
  * Class handling the creation, deletion, and upgrade of the database.
  *
- * @author clidwin
- * @created April 19, 2015
- * @modified April 19, 2015
+ * @author Christina Lidwin (clidwin)
+ * @version April 20, 2015
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "GeospatialPins.db";
 
+    private static final String NUMERIC_TYPE = " NUMERIC";
     private static final String INTEGER_TYPE = " INTEGER";
     private static final String TEXT_TYPE = " TEXT";
     private static final String COMMA_SEP = ",";
 
     // Database creation statement
     private static final String GEOSPATIAL_PINS_TABLE_CREATE =
-            "CREATE TABLE " + GeospatialPinContract.Entry.TABLE_NAME + " (" +
-                    GeospatialPinContract.Entry._ID + " INTEGER PRIMARY KEY," +
-                    GeospatialPinContract.Entry.COLUMN_NAME_ARRIVAL_TIME + TEXT_TYPE + COMMA_SEP +
-                    GeospatialPinContract.Entry.COLUMN_NAME_ADDRESS + TEXT_TYPE + COMMA_SEP +
-                    GeospatialPinContract.Entry.COLUMN_NAME_LOCATION + TEXT_TYPE + COMMA_SEP +
-                    GeospatialPinContract.Entry.COLUMN_NAME_DURATION + TEXT_TYPE +
+            "CREATE TABLE " + Keys.TABLE_NAME + " (" +
+                    Keys._ID + " INTEGER PRIMARY KEY," +
+                    Keys.COLUMN_NAME_ARRIVAL_TIME + TEXT_TYPE + COMMA_SEP +
+                    Keys.COLUMN_NAME_ADDRESS + TEXT_TYPE + COMMA_SEP +
+                    Keys.COLUMN_NAME_LOCATION + NUMERIC_TYPE + COMMA_SEP +
+                    Keys.COLUMN_NAME_DURATION + INTEGER_TYPE +
                     " )";
 
     // Database deletion statement
     private static final String SQL_DELETE_ENTRIES =
-            "DROP TABLE IF EXISTS " + GeospatialPinContract.Entry.TABLE_NAME;
+            "DROP TABLE IF EXISTS " + Keys.TABLE_NAME;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -53,5 +55,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
+    }
+
+    /**
+     * Contains table information (including table and column names) and related helper methods.
+     */
+    public static class Keys implements BaseColumns {
+        public static final String TABLE_NAME = "pins";
+
+        private static String[] allColumns = {
+                DatabaseHelper.Keys._ID,
+                DatabaseHelper.Keys.COLUMN_NAME_ADDRESS,
+                DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME,
+                DatabaseHelper.Keys.COLUMN_NAME_DURATION,
+                DatabaseHelper.Keys.COLUMN_NAME_LOCATION
+        };
+
+        // Column names
+        public static final String COLUMN_NAME_NULLABLE = null;
+        public static final String COLUMN_NAME_ARRIVAL_TIME = "arrivalTime";
+        public static final String COLUMN_NAME_ADDRESS = "address";
+        public static final String COLUMN_NAME_DURATION = "duration";
+        public static final String COLUMN_NAME_LOCATION = "location";
+
+        /**
+         * @return all of the possible columns in this table.
+         */
+        public static String [] getAllColumns() {
+            return allColumns;
+        }
     }
 }

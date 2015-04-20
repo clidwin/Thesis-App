@@ -26,6 +26,8 @@ import android.os.ResultReceiver;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,38 +44,31 @@ import com.google.android.visualimprints.services.FetchAddressIntentService;
 import com.google.android.visualimprints.storage.DatabaseAdapter;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Getting Location Updates.
  *
- * Demonstrates how to use the Fused Location Provider API to get updates about a device's
- * location. The Fused Location Provider is part of the Google Play services location APIs.
+ * Based on the samples from: https://github.com/googlesamples/android-play-location/
  *
- * For a simpler example that shows the use of Google Play services to fetch the last known location
- * of a device, see
- * https://github.com/googlesamples/android-play-location/tree/master/BasicLocation.
- *
- * This sample uses Google Play services, but it does not require authentication. For a sample that
- * uses Google Play services for authentication, see
- * https://github.com/googlesamples/android-google-accounts/tree/master/QuickStart.
+ * @author Christina Lidwin (clidwin)
+ * @version April 20, 2015
  */
 public class MainActivity extends ActionBarActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
-
-    protected static final String TAG = "location-updates-sample";
 
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 20000;
-
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
      * than this value.
      */
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-
+    protected static final String TAG = "location-updates-sample";
     // Keys for storing activity state in the Bundle.
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     protected final static String LOCATION_KEY = "location-key";
@@ -95,6 +90,7 @@ public class MainActivity extends ActionBarActivity implements
     protected GeospatialPin mCurrentPin;
 
     // UI Widgets.
+    protected TableLayout mAllLocationsTable;
     protected TextView mLastUpdateTimeTextView;
     protected TextView mLatitudeTextView;
     protected TextView mLongitudeTextView;
@@ -120,6 +116,7 @@ public class MainActivity extends ActionBarActivity implements
         mResultReceiver = new AddressResultReceiver(new Handler());
 
         // Locate the UI widgets.
+        mAllLocationsTable = (TableLayout) findViewById(R.id.all_locations_table_layout);
         mLatitudeTextView = (TextView) findViewById(R.id.latitude_text);
         mLongitudeTextView = (TextView) findViewById(R.id.longitude_text);
         mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
@@ -136,9 +133,31 @@ public class MainActivity extends ActionBarActivity implements
         openDatabase();
     }
 
+    @Override
+    public void onDestroy() {
+        closeDatabase();
+    }
+
     private void openDatabase() {
         dbAdapter = new DatabaseAdapter(this);
         dbAdapter.open();
+
+        populateLocationHistoryTable(dbAdapter.getAllEntries());
+    }
+
+    private void populateLocationHistoryTable(ArrayList<Date> dbEntries) {
+        for (Date s: dbEntries) {
+            TextView sampleText = new TextView(this);
+            sampleText.setText(s.toString());
+
+            TableRow row = new TableRow(this);
+            row.addView(sampleText);
+            mAllLocationsTable.addView(row);
+        }
+    }
+
+    private void closeDatabase() {
+        dbAdapter.close();
     }
     /**
      * Updates fields based on data stored in the bundle.
@@ -369,6 +388,7 @@ public class MainActivity extends ActionBarActivity implements
     @Override
     public void onLocationChanged(Location location) {
         mCurrentPin = new GeospatialPin(location);
+        dbAdapter.addNewEntry(mCurrentPin);
         fetchAddressButtonHandler(mLocationAddressTextView);
         updateUI();
         showToast(getResources().getString(R.string.location_updated_message));
@@ -400,6 +420,13 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     /**
+     * Shows a toast with the given text.
+     */
+    protected void showToast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
      * Receiver for data sent from FetchAddressIntentService.
      */
     class AddressResultReceiver extends ResultReceiver {
@@ -428,12 +455,5 @@ public class MainActivity extends ActionBarActivity implements
 
             updateUI();
         }
-    }
-
-    /**
-     * Shows a toast with the given text.
-     */
-    protected void showToast(String text) {
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 }

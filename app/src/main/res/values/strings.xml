@@ -25,7 +25,7 @@
     <string name="start_updates">Start updates</string>
     <string name="stop_updates">Stop updates</string>
 
-    <string name="last_update_time_label">Last location update time: </string>
+    <string name="last_update_time_label">Time Updated: </string>
 
     <string name="location_updated_message">Location updated</string>
     <string name="address_found">Address Found!</string>
@@ -34,4 +34,6 @@
     <string name="invalid_lat_long_used">Invalid Location Used</string>
     <string name="no_address_found">No Address Found</string>
     <string name="no_geocoder_available">No geocoder available</string>
+    <string name="last_location_label">Most Recent Location:</string>
+    <string name="all_locations_label">All Locations:</string>
 </resources>

@@ -22,9 +22,13 @@ public class GeospatialPin {
 
 
     public GeospatialPin(Location location) {
+        this(location, new Date(), 0);
+    }
+
+    public GeospatialPin(Location location, Date arrivalTime, long duration) {
         this.location = location;
-        this.arrivalTime = new Date();
-        this.duration = 0;
+        this.arrivalTime = arrivalTime;
+        this.duration = duration;
     }
 
     /**
