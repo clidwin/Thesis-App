@@ -40,12 +40,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.visualimprints.Constants;
 import com.google.android.visualimprints.GeospatialPin;
+import com.google.android.visualimprints.VisualImprintsApplication;
 import com.google.android.visualimprints.services.FetchAddressIntentService;
 import com.google.android.visualimprints.storage.DatabaseAdapter;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Getting Location Updates.
@@ -53,7 +52,7 @@ import java.util.Date;
  * Based on the samples from: https://github.com/googlesamples/android-play-location/
  *
  * @author Christina Lidwin (clidwin)
- * @version April 20, 2015
+ * @version April 21, 2015
  */
 public class MainActivity extends ActionBarActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
@@ -130,7 +129,7 @@ public class MainActivity extends ActionBarActivity implements
         // Kick off the process of building a GoogleApiClient and requesting the LocationServices
         // API.
         buildGoogleApiClient();
-        openDatabase();
+        establishDatabaseConnection();
     }
 
     @Override
@@ -138,22 +137,43 @@ public class MainActivity extends ActionBarActivity implements
         closeDatabase();
     }
 
-    private void openDatabase() {
-        dbAdapter = new DatabaseAdapter(this);
-        dbAdapter.open();
+    private void establishDatabaseConnection() {
+        VisualImprintsApplication vI = (VisualImprintsApplication) this.getApplication();
+        dbAdapter = vI.getDatabaseAdapter();
 
-        populateLocationHistoryTable(dbAdapter.getAllEntries());
+        int i = 1;
+        for (GeospatialPin pin: dbAdapter.getAllEntries()) {
+            addLocationToHistoryTable(pin, i);
+            i++;
+        }
     }
 
-    private void populateLocationHistoryTable(ArrayList<Date> dbEntries) {
-        for (Date s: dbEntries) {
-            TextView sampleText = new TextView(this);
-            sampleText.setText(s.toString());
+    /**
+     * Adds the list of {@link com.google.android.visualimprints.GeospatialPin} to the
+     * bottom of the history table.
+     * @param pin The Geospatial Pin to be added to the table.
+     * @param index the location to add the location to in the table
+     */
+    private void addLocationToHistoryTable(GeospatialPin pin, int index) {
+        TableRow row = new TableRow(this);
 
-            TableRow row = new TableRow(this);
-            row.addView(sampleText);
-            mAllLocationsTable.addView(row);
+        TextView timeText = new TextView(this);
+        timeText.setText(DateFormat.getInstance().format(pin.getArrivalTime()));
+        row.addView(timeText);
+
+        TextView latText = new TextView(this);
+        latText.setText("" + pin.getLocation().getLatitude());
+        row.addView(latText);
+
+        TextView longText = new TextView(this);
+        longText.setText("" + pin.getLocation().getLongitude());
+        row.addView(longText);
+
+        if (pin.getAddress() != null) {
+
         }
+
+        mAllLocationsTable.addView(row, index);
     }
 
     private void closeDatabase() {
@@ -198,7 +218,7 @@ public class MainActivity extends ActionBarActivity implements
      * Runs when user clicks the Fetch Address button. Starts the service to fetch the address if
      * GoogleApiClient is connected.
      */
-    public void fetchAddressButtonHandler(View view) {
+    public void fetchAddress(View view) {
         // We only start the service to fetch the address if GoogleApiClient is connected.
         if (mGoogleApiClient.isConnected() && mCurrentPin != null) {
             startIntentService();
@@ -319,16 +339,16 @@ public class MainActivity extends ActionBarActivity implements
         // connection to GoogleApiClient intact.  Here, we resume receiving
         // location updates if the user has requested them.
 
-        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
+        //if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+            //startLocationUpdates();
+        //}
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         // Stop location updates to save battery, but don't disconnect the GoogleApiClient object.
-        stopLocationUpdates();
+        //stopLocationUpdates();
     }
 
     @Override
@@ -369,7 +389,7 @@ public class MainActivity extends ActionBarActivity implements
                 // It is possible that the user presses the button to get the address before the
                 // GoogleApiClient object successfully connects. In such a case, mAddressRequested
                 // is set to true, but no attempt is made to fetch the address (see
-                // fetchAddressButtonHandler()) . Instead, we start the intent service here if the
+                // fetchAddress()) . Instead, we start the intent service here if the
                 // user has requested an address, since we now have a connection to GoogleApiClient.
                 startIntentService();
             }
@@ -387,9 +407,13 @@ public class MainActivity extends ActionBarActivity implements
      */
     @Override
     public void onLocationChanged(Location location) {
+        if (mCurrentPin != null) {
+            addLocationToHistoryTable(mCurrentPin, 1);
+        }
+        //TODO(clidwin): Update the location duration of the current pin in the database
         mCurrentPin = new GeospatialPin(location);
         dbAdapter.addNewEntry(mCurrentPin);
-        fetchAddressButtonHandler(mLocationAddressTextView);
+        fetchAddress(mLocationAddressTextView);
         updateUI();
         showToast(getResources().getString(R.string.location_updated_message));
     }

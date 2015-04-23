@@ -13,9 +13,10 @@ import android.provider.BaseColumns;
  * @version April 20, 2015
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "GeospatialPins.db";
 
+    private static final String REAL_TYPE = " REAL";
     private static final String NUMERIC_TYPE = " NUMERIC";
     private static final String INTEGER_TYPE = " INTEGER";
     private static final String TEXT_TYPE = " TEXT";
@@ -27,8 +28,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     Keys._ID + " INTEGER PRIMARY KEY," +
                     Keys.COLUMN_NAME_ARRIVAL_TIME + TEXT_TYPE + COMMA_SEP +
                     Keys.COLUMN_NAME_ADDRESS + TEXT_TYPE + COMMA_SEP +
-                    Keys.COLUMN_NAME_LOCATION + NUMERIC_TYPE + COMMA_SEP +
-                    Keys.COLUMN_NAME_DURATION + INTEGER_TYPE +
+                    Keys.COLUMN_NAME_DURATION + INTEGER_TYPE + COMMA_SEP +
+                    Keys.COLUMN_NAME_LOCATION_LAT + REAL_TYPE + COMMA_SEP +
+                    Keys.COLUMN_NAME_LOCATION_LONG + REAL_TYPE +
                     " )";
 
     // Database deletion statement
@@ -48,6 +50,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
+        //TODO(clidwin): Transfer (don't delete) data on upgrade.
         db.execSQL(SQL_DELETE_ENTRIES);
         onCreate(db);
     }
@@ -68,7 +71,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseHelper.Keys.COLUMN_NAME_ADDRESS,
                 DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME,
                 DatabaseHelper.Keys.COLUMN_NAME_DURATION,
-                DatabaseHelper.Keys.COLUMN_NAME_LOCATION
+                DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT,
+                Keys.COLUMN_NAME_LOCATION_LONG
         };
 
         // Column names
@@ -76,7 +80,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         public static final String COLUMN_NAME_ARRIVAL_TIME = "arrivalTime";
         public static final String COLUMN_NAME_ADDRESS = "address";
         public static final String COLUMN_NAME_DURATION = "duration";
-        public static final String COLUMN_NAME_LOCATION = "location";
+        public static final String COLUMN_NAME_LOCATION_LAT = "locationLat";
+        public static final String COLUMN_NAME_LOCATION_LONG = "locationLong";
 
         /**
          * @return all of the possible columns in this table.

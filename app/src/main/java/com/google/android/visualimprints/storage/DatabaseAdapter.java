@@ -19,7 +19,7 @@ import java.util.Locale;
  * Facilitates communication between the application and its database.
  *
  * @author Christina Lidwin (clidwin)
- * @version April 20, 2015
+ * @version April 21, 2015
  */
 public class DatabaseAdapter {
 
@@ -45,7 +45,7 @@ public class DatabaseAdapter {
 
     /**
      * Creates a new row in the database with information about a new pin.
-     * @param pin {@link GeospatialPin} location-based data to be included in the new row of the table.
+     * @param pin {@link GeospatialPin} location-based data to be included in the new table row.
      */
     public void addNewEntry(GeospatialPin pin) {
         open();
@@ -58,8 +58,13 @@ public class DatabaseAdapter {
         values.put(
                 DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME,
                 pin.getArrivalTime().toString());
-        values.put(DatabaseHelper.Keys.COLUMN_NAME_LOCATION, pin.getLocation().toString());
         values.put(DatabaseHelper.Keys.COLUMN_NAME_DURATION, pin.getDuration());
+        values.put(
+                DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT,
+                String.valueOf(pin.getLocation().getLatitude()));
+        values.put(
+                DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LONG,
+                String.valueOf(pin.getLocation().getLongitude()));
 
         // Write the entry into the database
         database.insert (
@@ -68,7 +73,11 @@ public class DatabaseAdapter {
                 values);
     }
 
-    public ArrayList<Date> getAllEntries() {
+    /**
+     * @return all entries in the database as a list of
+     * {@link com.google.android.visualimprints.GeospatialPin} objects
+     */
+    public ArrayList<GeospatialPin> getAllEntries() {
         String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
 
         Cursor c = database.query(
@@ -81,17 +90,40 @@ public class DatabaseAdapter {
                 sortOrder                               // Sort order
         );
 
-        ArrayList<Date> geospatialPinList = new ArrayList<>();
+        ArrayList<GeospatialPin> geospatialPinList = new ArrayList<>();
         if (c.moveToFirst()) {
             do {
-                String arrivalTime = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME));
-                geospatialPinList.add(constructGeospatialPin(arrivalTime));
+                String arrivalTime = c.getString(
+                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME));
+                double latitude = c.getDouble(
+                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT));
+                double longitude = c.getDouble(
+                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LONG));
+                int duration = c.getInt(
+                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_DURATION));
+                String address = c.getString(
+                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ADDRESS));
+                GeospatialPin pin =
+                        constructGeospatialPin(arrivalTime, latitude, longitude, duration, address);
+                geospatialPinList.add(pin);
             } while (c.moveToNext());
         }
         return geospatialPinList;
     }
 
-    private Date constructGeospatialPin(String arrivalTime) {
+    /**
+     * Creates a {@link com.google.android.visualimprints.GeospatialPin} object from database row
+     * components.
+     *
+     * @param arrivalTime {@link String} the time of arrival at the location
+     * @param latitude {long} the latitude portion of the location
+     * @param longitude {long} the longitude portion of the location
+     * @param duration {int} the number of seconds spent at the location
+     * @param address {String} representation of the address associated with the location
+     * @return a constructed
+     */
+    private GeospatialPin constructGeospatialPin(
+            String arrivalTime, double latitude, double longitude, int duration, String address) {
         try {
             // Extract Date Information
             SimpleDateFormat dateFormatter =
@@ -100,10 +132,13 @@ public class DatabaseAdapter {
 
             // Reconstruct location information
             Location location = new Location("");
-            location.setLatitude(0);
-            location.setLongitude(0);
+            location.setLatitude(latitude);
+            location.setLongitude(longitude);
 
-            return arrivalDate;
+            GeospatialPin pin = new GeospatialPin(location, arrivalDate, duration);
+            //TODO(clidwin): Create the address object and then uncomment the line below
+            //pin.setAddress(pinAddress);
+            return pin;
         } catch (ParseException e) {
             e.printStackTrace();
             return null;

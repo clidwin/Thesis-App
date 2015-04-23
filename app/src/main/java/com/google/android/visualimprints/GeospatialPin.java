@@ -10,9 +10,8 @@ import java.util.Date;
 /**
  * Custom data structure representing all of the information relating to a particular location.
  *
- * @author clidwin
- * @created April 19, 2015
- * @modified April 19, 2015
+ * @author Christina Lidwin (clidwin)
+ * @version April 21, 2015
  */
 public class GeospatialPin {
     private Address address;
@@ -59,7 +58,14 @@ public class GeospatialPin {
      */
     public long getDuration() { return duration; }
 
+    /**
+     * @return the full {@link android.location.Address} in String format.
+     */
     public String getReadableAddress() {
+        if (address == null) {
+            return "";
+        }
+
         ArrayList<String> addressFragments = new ArrayList<String>();
         for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
             addressFragments.add(address.getAddressLine(i));
