@@ -1,14 +1,16 @@
 package com.google.android.visualimprints;
 
 import android.app.Application;
+import android.content.Intent;
 
+import com.google.android.visualimprints.services.GpsLocationService;
 import com.google.android.visualimprints.storage.DatabaseAdapter;
 
 /**
  * Controlling class for the entire application.
  *
  * @author Christina Lidwin (clidwin)
- * @version April 23, 2015
+ * @version April 26, 2015
  */
 public class VisualImprintsApplication extends Application {
     private DatabaseAdapter dbAdapter;
@@ -18,6 +20,11 @@ public class VisualImprintsApplication extends Application {
     public void onCreate() {
         dbAdapter = new DatabaseAdapter(getApplicationContext());
         dbAdapter.open();
+
+        // Start Service
+        //TODO(clidwin): Start the service on device startup rather than application startup
+        Intent gpsIntent = new Intent(getApplicationContext(), GpsLocationService.class);
+        startService(gpsIntent);
     }
 
     /**

@@ -19,7 +19,7 @@ import java.util.Locale;
  * Facilitates communication between the application and its database.
  *
  * @author Christina Lidwin (clidwin)
- * @version April 21, 2015
+ * @version April 26, 2015
  */
 public class DatabaseAdapter {
 
@@ -74,11 +74,46 @@ public class DatabaseAdapter {
     }
 
     /**
+     * @return the most recent entry in the database as a
+     * {@link com.google.android.visualimprints.GeospatialPin} object
+     */
+    public GeospatialPin getMostRecentEntry() {
+        String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
+
+        Cursor c = database.query(
+                DatabaseHelper.Keys.TABLE_NAME,         // The table to query
+                DatabaseHelper.Keys.getAllColumns(),    // The columns to return
+                null,                                   // The columns for the WHERE clause
+                null,                                   // The values for the WHERE clause
+                null,                                   // Row groupings
+                null,                                   // Row group filters
+                sortOrder                               // Sort order
+        );
+
+        if (c.moveToFirst()) {
+            String arrivalTime = c.getString(
+                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME));
+            double latitude = c.getDouble(
+                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT));
+            double longitude = c.getDouble(
+                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LONG));
+            int duration = c.getInt(
+                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_DURATION));
+            String address = c.getString(
+                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ADDRESS));
+            c.close();
+            return constructGeospatialPin(arrivalTime, latitude, longitude, duration, address);
+        }
+        c.close();
+        return null;
+    }
+
+    /**
      * @return all entries in the database as a list of
      * {@link com.google.android.visualimprints.GeospatialPin} objects
      */
     public ArrayList<GeospatialPin> getAllEntries() {
-        String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
+        String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " ASC";
 
         Cursor c = database.query(
                 DatabaseHelper.Keys.TABLE_NAME,         // The table to query
@@ -108,6 +143,7 @@ public class DatabaseAdapter {
                 geospatialPinList.add(pin);
             } while (c.moveToNext());
         }
+        c.close();
         return geospatialPinList;
     }
 

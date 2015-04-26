@@ -2,6 +2,9 @@ package com.google.android.visualimprints;
 
 /**
  * Constant values reused in this sample.
+ *
+ * @author Christina Lidwin (clidwin)
+ * @version April 26, 2015
  */
 public final class Constants {
     public static final int SUCCESS_RESULT = 0;
@@ -15,8 +18,24 @@ public final class Constants {
 
     public static final String LOCATION_DATA_EXTRA = PACKAGE_NAME + ".LOCATION_DATA_EXTRA";
 
+    /* Broadcast information */
+    public static final String BROADCAST_ACTION = PACKAGE_NAME + ".BROADCAST";
+    public static final String BROADCAST_UPDATE = PACKAGE_NAME + ".BROADCAST_UPDATE";
+    public static final String BROADCAST_NEW_LOCATION = PACKAGE_NAME + ".NEW_LOCATION_ADDED";
+
     /* Keys */
     public static final String RESULT_ADDRESS_KEY = PACKAGE_NAME + ".RESULT_ADDRESS_KEY";
     public static final String RESULT_DATA_KEY = PACKAGE_NAME + ".RESULT_DATA_KEY";
+
+    /**
+     * Desired interval for location updates in milliseconds (updates may be more or less frequent)
+     */
+    public static final long UPDATE_INTERVAL = 15000;
+
+    /**
+     * Desired distance to receive location updates in meters (updates may be more or less frequent)
+     */
+    public static final long UPDATE_DISTANCE = 0;
+
 }
 
