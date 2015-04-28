@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.TableLayout;
@@ -39,11 +40,11 @@ import java.text.DateFormat;
 
 /**
  * Getting Location Updates.
- *
+ * <p/>
  * Based on the samples from: https://github.com/googlesamples/android-play-location/
  *
  * @author Christina Lidwin (clidwin)
- * @version April 26, 2015
+ * @version April 27, 2015
  */
 public class MainActivity extends Activity {
     protected static final String TAG = "visual-imprints-main";
@@ -84,7 +85,6 @@ public class MainActivity extends Activity {
 
     private void openReceiver() {
         IntentFilter mGpsLocationFilter = new IntentFilter(Constants.BROADCAST_ACTION);
-        //mGpsLocationFilter.addDataScheme(Constants.BROADCAST_NEW_LOCATION);
 
         GpsLocationReceiver mGpsLocationReceiver = new GpsLocationReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -92,6 +92,10 @@ public class MainActivity extends Activity {
                 mGpsLocationFilter);
     }
 
+    /**
+     * Piggy-backs off the application's established connection with the database and loads
+     * its contents into the activity UI.
+     */
     private void connectToDatabase() {
         VisualImprintsApplication vI = (VisualImprintsApplication) this.getApplication();
         dbAdapter = vI.getDatabaseAdapter();
@@ -104,7 +108,7 @@ public class MainActivity extends Activity {
      */
     private void loadDatabaseContents() {
         int i = 1;
-        for (GeospatialPin pin: dbAdapter.getAllEntries()) {
+        for (GeospatialPin pin : dbAdapter.getAllEntries()) {
             addLocationToHistoryTable(pin, i);
             i++;
         }
@@ -113,7 +117,8 @@ public class MainActivity extends Activity {
     /**
      * Adds the list of {@link com.google.android.visualimprints.GeospatialPin} to the
      * bottom of the history table.
-     * @param pin The Geospatial Pin to be added to the table.
+     *
+     * @param pin   The Geospatial Pin to be added to the table.
      * @param index the location to add the location to in the table
      */
     private void addLocationToHistoryTable(GeospatialPin pin, int index) {
@@ -124,12 +129,19 @@ public class MainActivity extends Activity {
         row.addView(timeText);
 
         TextView latText = new TextView(this);
-        latText.setText("" + pin.getLocation().getLatitude());
+        latText.setText(
+                "(" + pin.getLocation().getLatitude() +
+                        ", " + pin.getLocation().getLongitude() + ")"
+        );
         row.addView(latText);
 
-        TextView longText = new TextView(this);
+        TextView durationText = new TextView(this);
+        durationText.setText("" + pin.getDuration() + "ms");
+        row.addView(durationText);
+
+        /*TextView longText = new TextView(this);
         longText.setText("" + pin.getLocation().getLongitude());
-        row.addView(longText);
+        row.addView(longText);*/
 
         if (pin.getAddress() != null) {
 
@@ -170,10 +182,16 @@ public class MainActivity extends Activity {
      * Updates the latitude, the longitude, and the last location time in the UI.
      */
     private void updateUI() {
-        mLatitudeTextView.setText(String.valueOf(mCurrentPin.getLocation().getLatitude()));
-        mLongitudeTextView.setText(String.valueOf(mCurrentPin.getLocation().getLongitude()));
-        mLastUpdateTimeTextView.setText(
-                DateFormat.getTimeInstance().format(mCurrentPin.getArrivalTime()));
+        if (mCurrentPin == null) {
+            mCurrentPin = dbAdapter.getMostRecentEntry();
+        }
+        if (mCurrentPin != null) {
+            mLatitudeTextView.setText(String.valueOf(mCurrentPin.getLocation().getLatitude()));
+            mLongitudeTextView.setText(String.valueOf(mCurrentPin.getLocation().getLongitude()));
+            mLastUpdateTimeTextView.setText(
+                    DateFormat.getTimeInstance().format(mCurrentPin.getArrivalTime()));
+            mLocationAddressTextView.setText("" + mCurrentPin.getDuration() + "ms");
+        }
     }
 
     /**
@@ -191,9 +209,27 @@ public class MainActivity extends Activity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            //TODO(clidwin): Differentiate between update and new location
             showToast("Location received");
-            mCurrentPin = dbAdapter.getMostRecentEntry();
-            updateUI();
+
+           String b = intent.getStringExtra(Constants.BROADCAST_UPDATE);
+           if (b != null) {
+               switch (b) {
+                   case Constants.BROADCAST_NEW_LOCATION:
+                       if (mCurrentPin != null) {
+                           addLocationToHistoryTable(mCurrentPin, 1);
+                       }
+                       mCurrentPin = dbAdapter.getMostRecentEntry();
+                       updateUI();
+                       break;
+                   case Constants.BROADCAST_UPDATED_LOCATION:
+                       mCurrentPin = dbAdapter.getMostRecentEntry();
+                       updateUI();
+                       break;
+                   default:
+                       break;
+               }
+           }
         }
     }
 }

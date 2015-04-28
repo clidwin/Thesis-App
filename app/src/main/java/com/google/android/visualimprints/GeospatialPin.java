@@ -11,7 +11,7 @@ import java.util.Date;
  * Custom data structure representing all of the information relating to a particular location.
  *
  * @author Christina Lidwin (clidwin)
- * @version April 21, 2015
+ * @version April 27, 2015
  */
 public class GeospatialPin {
     private Address address;
@@ -40,23 +40,36 @@ public class GeospatialPin {
     /**
      * @return the {Address} of the pin
      */
-    public Address getAddress() { return address; }
+    public Address getAddress() {
+        return address;
+    }
 
     /**
      * Sets the address for the pin.
+     *
      * @param address the {Address} object for the geospatial pin.
      */
-    public void setAddress(Address address) { this.address = address; }
+    public void setAddress(Address address) {
+        this.address = address;
+    }
 
     /**
      * @return the {Date} the pin was created
      */
-    public Date getArrivalTime() { return arrivalTime; }
+    public Date getArrivalTime() {
+        return arrivalTime;
+    }
 
     /**
      * @return the the amount of time in milliseconds spent at the pin
      */
-    public long getDuration() { return duration; }
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
 
     /**
      * @return the full {@link android.location.Address} in String format.
@@ -67,7 +80,7 @@ public class GeospatialPin {
         }
 
         ArrayList<String> addressFragments = new ArrayList<String>();
-        for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
+        for (int i = 0; i < address.getMaxAddressLineIndex(); i++) {
             addressFragments.add(address.getAddressLine(i));
         }
         return TextUtils.join(System.getProperty("line.separator"), addressFragments);

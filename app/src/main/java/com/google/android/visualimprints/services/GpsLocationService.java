@@ -15,16 +15,19 @@ import com.google.android.visualimprints.Constants;
 import com.google.android.visualimprints.GeospatialPin;
 import com.google.android.visualimprints.storage.DatabaseAdapter;
 
+import java.util.Date;
+
 /**
  * Retrieves location information
  *
  * @author Christina Lidwin (clidwin)
- * @version April 26, 2015
+ * @version April 27, 2015
  */
 public class GpsLocationService extends Service implements LocationListener {
     private static final String TAG = "gps-location-service";
 
     DatabaseAdapter dbAdapter;
+    GeospatialPin mostRecentPin;
     LocationManager locationManager;
 
     public GpsLocationService() {
@@ -33,9 +36,9 @@ public class GpsLocationService extends Service implements LocationListener {
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "GpsLocationService started.");
         super.onCreate();
         subscribeToLocationUpdates();
+        Log.d(TAG, "GpsLocationService started.");
     }
 
     @Override
@@ -47,10 +50,10 @@ public class GpsLocationService extends Service implements LocationListener {
     /**
      * Helper method.
      * Referenced from:
-     *      http://androidgps.blogspot.com/2008/09/simple-android-tracklogging-service.html
+     * http://androidgps.blogspot.com/2008/09/simple-android-tracklogging-service.html
      */
     private void subscribeToLocationUpdates() {
-        this.locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,
                 Constants.UPDATE_INTERVAL,
@@ -71,14 +74,52 @@ public class GpsLocationService extends Service implements LocationListener {
         }
 
         // Add location item to the database.
-        GeospatialPin pin = new GeospatialPin(location);
-        //TODO(clidwin): Only add a new entry if the most recent entry is a different location.
-        //TODO(clidwin): Update duration at location through the service.
-        dbAdapter.addNewEntry(pin);
+        GeospatialPin newPin = new GeospatialPin(location);
+        if (mostRecentPin == null) {
+            mostRecentPin = dbAdapter.getMostRecentEntry();
+        }
+        if (mostRecentPin != null) {
+            Location newLocation = newPin.getLocation();
+            Location recentLocation = mostRecentPin.getLocation();
+
+            // Compare latitudes and longitudes to see if they're approximately the same location
+            // From //stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
+            if (roundValue(newLocation.getLatitude()) == roundValue(recentLocation.getLatitude())) {
+                if (roundValue(newLocation.getLongitude()) ==
+                        roundValue(recentLocation.getLongitude())) {
+                    // The locations are geographically similar
+                    Log.d(TAG, "Locations are similar");
+
+                    long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
+                    mostRecentPin.setDuration(duration);
+                    dbAdapter.updateEntry(mostRecentPin);
+
+                    sendBroadcast(Constants.BROADCAST_UPDATED_LOCATION);
+                    return;
+                }
+            }
+            // Even if the location doesn't match, we want to update the duration
+            // of the last known location.
+            long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
+            mostRecentPin.setDuration(duration);
+            dbAdapter.updateEntry(mostRecentPin);
+        }
+
+        dbAdapter.addNewEntry(newPin);
+        mostRecentPin = newPin;
 
         //Broadcast a change was made
-        Log.d(TAG, "pin added successfully");
+        Log.d(TAG, "Location recorded");
         sendBroadcast(Constants.BROADCAST_NEW_LOCATION);
+    }
+
+    /**
+     * @param value
+     * @return
+     */
+    private double roundValue(double value) {
+        int precision = 10000; // Four decimal places
+        return (double) Math.round(value * precision) / precision;
     }
 
     private void sendBroadcast(String message) {

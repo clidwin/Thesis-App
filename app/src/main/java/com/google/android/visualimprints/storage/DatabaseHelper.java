@@ -1,6 +1,5 @@
 package com.google.android.visualimprints.storage;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -65,7 +64,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     public static class Keys implements BaseColumns {
         public static final String TABLE_NAME = "pins";
-
+        // Column names
+        public static final String COLUMN_NAME_NULLABLE = null;
+        public static final String COLUMN_NAME_ARRIVAL_TIME = "arrivalTime";
+        public static final String COLUMN_NAME_ADDRESS = "address";
+        public static final String COLUMN_NAME_DURATION = "duration";
+        public static final String COLUMN_NAME_LOCATION_LAT = "locationLat";
+        public static final String COLUMN_NAME_LOCATION_LONG = "locationLong";
         private static String[] allColumns = {
                 DatabaseHelper.Keys._ID,
                 DatabaseHelper.Keys.COLUMN_NAME_ADDRESS,
@@ -75,18 +80,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Keys.COLUMN_NAME_LOCATION_LONG
         };
 
-        // Column names
-        public static final String COLUMN_NAME_NULLABLE = null;
-        public static final String COLUMN_NAME_ARRIVAL_TIME = "arrivalTime";
-        public static final String COLUMN_NAME_ADDRESS = "address";
-        public static final String COLUMN_NAME_DURATION = "duration";
-        public static final String COLUMN_NAME_LOCATION_LAT = "locationLat";
-        public static final String COLUMN_NAME_LOCATION_LONG = "locationLong";
-
         /**
          * @return all of the possible columns in this table.
          */
-        public static String [] getAllColumns() {
+        public static String[] getAllColumns() {
             return allColumns;
         }
     }

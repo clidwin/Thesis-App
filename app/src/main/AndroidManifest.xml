@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
 Copyright 2014 Google, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.google.android.visualimprints.activities" >
+    package="com.google.android.visualimprints.activities">
     <!--
     Android has two location request settings: {@code ACCESS_COARSE_LOCATION} and
     {@code ACCESS_FINE_LOCATION}. These settings control the accuracy of the current location.
@@ -27,27 +26,35 @@ limitations under the License.
     Provider API and returns location updates that are accurate to within a few feet.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
+        android:name="com.google.android.visualimprints.VisualImprintsApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:name="com.google.android.visualimprints.VisualImprintsApplication"
-        android:theme="@style/Theme.Base" >
+        android:theme="@style/Theme.Base">
 
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <!-- Start GpsLocationService when the device is turned on (independent of app state) !-->
+        <receiver android:name="com.google.android.visualimprints.StartupBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <!--
         Service to asynchronously fetch a location address using a Geocoder. Setting the
         android:exported attribute to "false" stops other apps from starting this
@@ -56,8 +63,9 @@ limitations under the License.
         <service
             android:name="com.google.android.visualimprints.services.FetchAddressIntentService"
             android:exported="false"
-            android:label="FetchAddressIntentService"/>
-        <service android:name="com.google.android.visualimprints.services.GpsLocationService"
+            android:label="FetchAddressIntentService" />
+        <service
+            android:name="com.google.android.visualimprints.services.GpsLocationService"
             android:enabled="true"
             android:exported="false"
             android:label="GpsLocationService" />

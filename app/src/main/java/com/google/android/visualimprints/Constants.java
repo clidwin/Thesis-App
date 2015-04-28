@@ -4,15 +4,14 @@ package com.google.android.visualimprints;
  * Constant values reused in this sample.
  *
  * @author Christina Lidwin (clidwin)
- * @version April 26, 2015
+ * @version April 27, 2015
  */
 public final class Constants {
     public static final int SUCCESS_RESULT = 0;
 
     public static final int FAILURE_RESULT = 1;
 
-    public static final String PACKAGE_NAME =
-            "com.google.android.visualimprints";
+    public static final String PACKAGE_NAME = "com.google.android.visualimprints";
 
     public static final String RECEIVER = PACKAGE_NAME + ".RECEIVER";
 
@@ -22,6 +21,7 @@ public final class Constants {
     public static final String BROADCAST_ACTION = PACKAGE_NAME + ".BROADCAST";
     public static final String BROADCAST_UPDATE = PACKAGE_NAME + ".BROADCAST_UPDATE";
     public static final String BROADCAST_NEW_LOCATION = PACKAGE_NAME + ".NEW_LOCATION_ADDED";
+    public static final String BROADCAST_UPDATED_LOCATION = PACKAGE_NAME + ".UPDATED_LOCATION";
 
     /* Keys */
     public static final String RESULT_ADDRESS_KEY = PACKAGE_NAME + ".RESULT_ADDRESS_KEY";
@@ -30,12 +30,17 @@ public final class Constants {
     /**
      * Desired interval for location updates in milliseconds (updates may be more or less frequent)
      */
-    public static final long UPDATE_INTERVAL = 15000;
+    public static final long UPDATE_INTERVAL = 20000;
 
     /**
      * Desired distance to receive location updates in meters (updates may be more or less frequent)
      */
     public static final long UPDATE_DISTANCE = 0;
 
+    /**
+     * String code based on:
+     * https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+     */
+    public static final String DATABASE_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSZ EEE";
 }
 

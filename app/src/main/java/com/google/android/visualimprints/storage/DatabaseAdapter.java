@@ -7,34 +7,37 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 
+import com.google.android.visualimprints.Constants;
 import com.google.android.visualimprints.GeospatialPin;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 
 /**
  * Facilitates communication between the application and its database.
  *
  * @author Christina Lidwin (clidwin)
- * @version April 26, 2015
+ * @version April 27, 2015
  */
 public class DatabaseAdapter {
 
     private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
 
-    public DatabaseAdapter(Context context){
+    public DatabaseAdapter(Context context) {
         this.dbHelper = new DatabaseHelper(context);
     }
 
     /**
      * Opens the database for writing.
+     *
      * @throws SQLException
      */
-    public void open() throws SQLException { database = dbHelper.getWritableDatabase(); }
+    public void open() throws SQLException {
+        database = dbHelper.getWritableDatabase();
+    }
 
     /**
      * Closes the database for writing.
@@ -45,19 +48,34 @@ public class DatabaseAdapter {
 
     /**
      * Creates a new row in the database with information about a new pin.
+     *
      * @param pin {@link GeospatialPin} location-based data to be included in the new table row.
      */
     public void addNewEntry(GeospatialPin pin) {
-        open();
+        ContentValues values = generateContentValues(pin);
 
-        // Create a map for the new pin,
-        // where the keys are the column names and values are the data pieces.
+        // Write the entry into the database
+        database.insert(
+                DatabaseHelper.Keys.TABLE_NAME,
+                DatabaseHelper.Keys.COLUMN_NAME_NULLABLE,
+                values);
+    }
+
+    /**
+     * Constructs database-ready versions of the information to be added.
+     *
+     * @param pin
+     * @return
+     */
+    private ContentValues generateContentValues(GeospatialPin pin) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DATABASE_DATE_TIME_FORMAT);
+
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.Keys._ID, pin.getArrivalTime().hashCode());
         values.put(DatabaseHelper.Keys.COLUMN_NAME_ADDRESS, "");
         values.put(
                 DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME,
-                pin.getArrivalTime().toString());
+                dateFormat.format(pin.getArrivalTime()));
         values.put(DatabaseHelper.Keys.COLUMN_NAME_DURATION, pin.getDuration());
         values.put(
                 DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT,
@@ -66,11 +84,7 @@ public class DatabaseAdapter {
                 DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LONG,
                 String.valueOf(pin.getLocation().getLongitude()));
 
-        // Write the entry into the database
-        database.insert (
-                DatabaseHelper.Keys.TABLE_NAME,
-                DatabaseHelper.Keys.COLUMN_NAME_NULLABLE,
-                values);
+        return values;
     }
 
     /**
@@ -91,18 +105,9 @@ public class DatabaseAdapter {
         );
 
         if (c.moveToFirst()) {
-            String arrivalTime = c.getString(
-                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME));
-            double latitude = c.getDouble(
-                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT));
-            double longitude = c.getDouble(
-                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LONG));
-            int duration = c.getInt(
-                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_DURATION));
-            String address = c.getString(
-                    c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ADDRESS));
+            GeospatialPin pin = constructGeospatialPin(c);
             c.close();
-            return constructGeospatialPin(arrivalTime, latitude, longitude, duration, address);
+            return pin;
         }
         c.close();
         return null;
@@ -113,7 +118,7 @@ public class DatabaseAdapter {
      * {@link com.google.android.visualimprints.GeospatialPin} objects
      */
     public ArrayList<GeospatialPin> getAllEntries() {
-        String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " ASC";
+        String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
 
         Cursor c = database.query(
                 DatabaseHelper.Keys.TABLE_NAME,         // The table to query
@@ -128,19 +133,7 @@ public class DatabaseAdapter {
         ArrayList<GeospatialPin> geospatialPinList = new ArrayList<>();
         if (c.moveToFirst()) {
             do {
-                String arrivalTime = c.getString(
-                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME));
-                double latitude = c.getDouble(
-                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT));
-                double longitude = c.getDouble(
-                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LONG));
-                int duration = c.getInt(
-                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_DURATION));
-                String address = c.getString(
-                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ADDRESS));
-                GeospatialPin pin =
-                        constructGeospatialPin(arrivalTime, latitude, longitude, duration, address);
-                geospatialPinList.add(pin);
+                geospatialPinList.add(constructGeospatialPin(c));
             } while (c.moveToNext());
         }
         c.close();
@@ -151,19 +144,25 @@ public class DatabaseAdapter {
      * Creates a {@link com.google.android.visualimprints.GeospatialPin} object from database row
      * components.
      *
-     * @param arrivalTime {@link String} the time of arrival at the location
-     * @param latitude {long} the latitude portion of the location
-     * @param longitude {long} the longitude portion of the location
-     * @param duration {int} the number of seconds spent at the location
-     * @param address {String} representation of the address associated with the location
-     * @return a constructed
+     * @param c {@link android.database.Cursor} A database pointer pointing to a data row
+     * @return a constructed GeospatialPin
      */
-    private GeospatialPin constructGeospatialPin(
-            String arrivalTime, double latitude, double longitude, int duration, String address) {
+    private GeospatialPin constructGeospatialPin(Cursor c) {
+        String arrivalTime = c.getString(
+                c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME));
+        double latitude = c.getDouble(
+                c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT));
+        double longitude = c.getDouble(
+                c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LONG));
+        int duration = c.getInt(
+                c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_DURATION));
+        String address = c.getString(
+                c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ADDRESS));
+
         try {
             // Extract Date Information
             SimpleDateFormat dateFormatter =
-                    new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", new Locale("us"));
+                    new SimpleDateFormat(Constants.DATABASE_DATE_TIME_FORMAT);
             Date arrivalDate = dateFormatter.parse(arrivalTime);
 
             // Reconstruct location information
@@ -179,5 +178,12 @@ public class DatabaseAdapter {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public void updateEntry(GeospatialPin pin) {
+        ContentValues values = generateContentValues(pin);
+        int id = pin.getArrivalTime().hashCode();
+
+        database.update(DatabaseHelper.Keys.TABLE_NAME, values, "_id=" + id, null);
     }
 }
