@@ -69,6 +69,7 @@ public class GpsLocationService extends Service implements LocationListener {
 
         // Create database connection if it does not already exist.
         if (dbAdapter == null) {
+            //TODO(clidwin): Find context for when the application isn't open
             dbAdapter = new DatabaseAdapter(getApplicationContext());
             dbAdapter.open();
         }

@@ -52,6 +52,8 @@ public class MainActivity extends Activity {
     protected final static String LOCATION_KEY = "location-key";
     protected static final String LOCATION_ADDRESS_KEY = "location-address";
 
+    //TODO(clidwin): Add an ActionBar for settings and refresh buttons
+
     /**
      * Represents a current location-based point of interest.
      */
@@ -209,8 +211,7 @@ public class MainActivity extends Activity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            //TODO(clidwin): Differentiate between update and new location
-            showToast("Location received");
+           showToast("Location received");
 
            String b = intent.getStringExtra(Constants.BROADCAST_UPDATE);
            if (b != null) {
