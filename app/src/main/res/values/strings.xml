@@ -36,4 +36,6 @@
     <string name="no_geocoder_available">No geocoder available</string>
     <string name="last_location_label">Most Recent Location:</string>
     <string name="all_locations_label">All Locations:</string>
+    <string name="refresh_location">Refresh Location</string>
+    <string name="edit_rows">Edit Rows</string>
 </resources>

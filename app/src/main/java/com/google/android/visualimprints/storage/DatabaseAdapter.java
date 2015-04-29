@@ -180,10 +180,40 @@ public class DatabaseAdapter {
         }
     }
 
+    public GeospatialPin getEntryById(int id) {
+        String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
+        String selection = DatabaseHelper.Keys._ID + " LIKE ?";
+        String [] query = {String.valueOf(id)};
+
+        Cursor c = database.query(
+                DatabaseHelper.Keys.TABLE_NAME,         // The table to query
+                DatabaseHelper.Keys.getAllColumns(),    // The columns to return
+                selection,                // The columns for the WHERE clause
+                query,                                   // The values for the WHERE clause
+                null,                                   // Row groupings
+                null,                                   // Row group filters
+                sortOrder                               // Sort order
+        );
+
+        if (c.moveToFirst()) {
+            GeospatialPin pin = constructGeospatialPin(c);
+            c.close();
+            return pin;
+        }
+        c.close();
+        return null;
+    }
+
     public void updateEntry(GeospatialPin pin) {
         ContentValues values = generateContentValues(pin);
         int id = pin.getArrivalTime().hashCode();
 
         database.update(DatabaseHelper.Keys.TABLE_NAME, values, "_id=" + id, null);
+    }
+
+    public void deleteEntry(GeospatialPin pin) {
+        int id = pin.getArrivalTime().hashCode();
+
+        database.delete(DatabaseHelper.Keys.TABLE_NAME, "_id=" + id, null);
     }
 }

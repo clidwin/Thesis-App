@@ -21,11 +21,18 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -37,6 +44,9 @@ import com.google.android.visualimprints.VisualImprintsApplication;
 import com.google.android.visualimprints.storage.DatabaseAdapter;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Getting Location Updates.
@@ -46,13 +56,11 @@ import java.text.DateFormat;
  * @author Christina Lidwin (clidwin)
  * @version April 27, 2015
  */
-public class MainActivity extends Activity {
+public class MainActivity extends ActionBarActivity implements OnClickListener {
     protected static final String TAG = "visual-imprints-main";
     // Keys for storing activity state in the Bundle.
     protected final static String LOCATION_KEY = "location-key";
     protected static final String LOCATION_ADDRESS_KEY = "location-address";
-
-    //TODO(clidwin): Add an ActionBar for settings and refresh buttons
 
     /**
      * Represents a current location-based point of interest.
@@ -67,6 +75,9 @@ public class MainActivity extends Activity {
     protected TextView mLocationAddressTextView;
     private DatabaseAdapter dbAdapter;
 
+    private ArrayList<TableRow> selectedRows;
+    private boolean rowsClickable = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +89,8 @@ public class MainActivity extends Activity {
         mLongitudeTextView = (TextView) findViewById(R.id.longitude_text);
         mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
         mLocationAddressTextView = (TextView) findViewById(R.id.location_address_text);
+
+        selectedRows = new ArrayList<>();
 
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
@@ -92,6 +105,14 @@ public class MainActivity extends Activity {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mGpsLocationReceiver,
                 mGpsLocationFilter);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_activity_menu, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     /**
@@ -109,11 +130,12 @@ public class MainActivity extends Activity {
      * Adds the contents of the database to the Location History Table.
      */
     private void loadDatabaseContents() {
-        int i = 1;
-        for (GeospatialPin pin : dbAdapter.getAllEntries()) {
+        ArrayList<GeospatialPin> allEntries = dbAdapter.getAllEntries();
+        for (int i = 1; i < allEntries.size() - 1; i++) {
+            GeospatialPin pin = allEntries.get(i-1);
             addLocationToHistoryTable(pin, i);
-            i++;
         }
+        updateUI();
     }
 
     /**
@@ -125,6 +147,8 @@ public class MainActivity extends Activity {
      */
     private void addLocationToHistoryTable(GeospatialPin pin, int index) {
         TableRow row = new TableRow(this);
+        row.setId(pin.getArrivalTime().hashCode());
+        row.setClickable(rowsClickable);
 
         TextView timeText = new TextView(this);
         timeText.setText(DateFormat.getInstance().format(pin.getArrivalTime()));
@@ -138,7 +162,7 @@ public class MainActivity extends Activity {
         row.addView(latText);
 
         TextView durationText = new TextView(this);
-        durationText.setText("" + pin.getDuration() + "ms");
+        durationText.setText(formatDuration(pin.getDuration()));
         row.addView(durationText);
 
         /*TextView longText = new TextView(this);
@@ -150,6 +174,21 @@ public class MainActivity extends Activity {
         }
 
         mAllLocationsTable.addView(row, index);
+    }
+
+    /**
+     * Formats duration value in hours, minutes, and seconds.
+     *
+     * Code reference:
+     *      //stackoverflow.com/questions/9027317/how-to-convert-milliseconds-to-hhmmss-format
+     * @param duration the amount of time to be formatted
+     * @return the formatted time
+     */
+    private String formatDuration(long duration) {
+        String formatted = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(duration),
+                TimeUnit.MILLISECONDS.toMinutes(duration) % TimeUnit.HOURS.toMinutes(1),
+                TimeUnit.MILLISECONDS.toSeconds(duration) % TimeUnit.MINUTES.toSeconds(1));
+        return formatted;
     }
 
     /**
@@ -192,7 +231,125 @@ public class MainActivity extends Activity {
             mLongitudeTextView.setText(String.valueOf(mCurrentPin.getLocation().getLongitude()));
             mLastUpdateTimeTextView.setText(
                     DateFormat.getTimeInstance().format(mCurrentPin.getArrivalTime()));
-            mLocationAddressTextView.setText("" + mCurrentPin.getDuration() + "ms");
+            mLocationAddressTextView.setText(formatDuration(mCurrentPin.getDuration()));
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.edit_rows:
+                rowsClickable = !rowsClickable;
+                toggleClickableRows();
+                return true;
+            case R.id.action_settings:
+                showToast("Merging selected rows.");
+                mergeLocations();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void mergeLocations() {
+        // Confirm only adjacent rows are selected
+        // (Can't merge locations that are not temporally sequential)
+        String [] query = new String [selectedRows.size()];
+        int i = 0;
+        for (View view: selectedRows) {
+            int tableIndex = mAllLocationsTable.indexOfChild(view);
+            View vM1 = mAllLocationsTable.getChildAt(tableIndex - 1);
+
+            if (!selectedRows.contains(vM1)) {
+                if (tableIndex + 1 < mAllLocationsTable.getChildCount()) {
+                    View vM2 = mAllLocationsTable.getChildAt(tableIndex + 1);
+                    if (!selectedRows.contains(vM2)) {
+                        //TODO(clidwin): Debug this, since some valid merges get here.
+                        Log.d(TAG, "Adjacent row not found");
+                        showToast("Merge not successful. Select adjacent rows.");
+                        return;
+                    }
+                }
+            }
+            query[i] = String.valueOf(view.getId());
+            i++;
+        }
+
+        // Get the database objects for the selected rows
+        ArrayList<GeospatialPin> pinsToMerge = new ArrayList<>();
+        int indexOfEarliestPin = -1;
+        i=0;
+        for (View view: selectedRows) {
+            //TODO(clidwin): Make one call to the database with all IDs using the query array (above)
+            GeospatialPin pin = dbAdapter.getEntryById(view.getId());
+            if (pin != null) {
+                pinsToMerge.add(pin);
+                if (indexOfEarliestPin == -1) {
+                    indexOfEarliestPin = i;
+                } else {
+                    Date earliestPinTime = pinsToMerge.get(indexOfEarliestPin).getArrivalTime();
+                    Date newPinTime = pin.getArrivalTime();
+                    if (newPinTime.before(earliestPinTime)) {
+                        indexOfEarliestPin = i;
+                    }
+                    //TODO(clidwin): Maybe delete entities here as they're "not earliest"
+                }
+                i++;
+            } else {
+                showToast("Merge not successful. Row not found.");
+                return;
+            }
+        }
+
+        GeospatialPin earliestPin = pinsToMerge.remove(indexOfEarliestPin);
+        for (GeospatialPin pin: pinsToMerge) {
+            earliestPin.setDuration(earliestPin.getDuration() + pin.getDuration());
+            //TODO(clidwin): delete all entries with one database call
+            dbAdapter.deleteEntry(pin);
+            dbAdapter.updateEntry(earliestPin);
+            for (View row: selectedRows) {
+                if (row.getId() == pin.getArrivalTime().hashCode()) {
+                    mAllLocationsTable.removeView(row);
+                    break;
+                }
+            }
+        }
+        TableRow selectedRow = selectedRows.get(0);
+        selectedRow.removeViewAt(2);
+        TextView durationText = new TextView(this);
+        durationText.setText(formatDuration(earliestPin.getDuration()));
+        selectedRow.addView(durationText);
+        showToast("Pins merged.");
+
+    }
+
+    private void toggleClickableRows() {
+        //TODO(clidwin): Fix bug causing rows to stay clickable despite toggle
+        for(int i = 1, j = mAllLocationsTable.getChildCount(); i < j; i++) {
+            View view = mAllLocationsTable.getChildAt(i);
+            if (view instanceof TableRow) {
+                TableRow row = (TableRow) view;
+                row.setClickable(rowsClickable);
+                row.setOnClickListener(this);
+            }
+        }
+
+        if (rowsClickable) {
+            showToast("Table Rows are now editable.");
+        } else {
+            showToast("Table Rows are no longer editable.");
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (selectedRows.contains(v)) {
+            selectedRows.remove(v);
+            v.setBackgroundColor(Color.TRANSPARENT);
+        } else {
+            selectedRows.add((TableRow)v);
+            v.setBackgroundColor(Color.CYAN);
         }
     }
 

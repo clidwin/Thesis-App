@@ -37,6 +37,7 @@ public class GpsLocationService extends Service implements LocationListener {
     @Override
     public void onCreate() {
         super.onCreate();
+
         subscribeToLocationUpdates();
         Log.d(TAG, "GpsLocationService started.");
     }
@@ -48,12 +49,13 @@ public class GpsLocationService extends Service implements LocationListener {
     }
 
     /**
-     * Helper method.
+     * Helper method to begin pinging for location updates.
      * Referenced from:
      * http://androidgps.blogspot.com/2008/09/simple-android-tracklogging-service.html
      */
     private void subscribeToLocationUpdates() {
         this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
         locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,
                 Constants.UPDATE_INTERVAL,
@@ -69,8 +71,7 @@ public class GpsLocationService extends Service implements LocationListener {
 
         // Create database connection if it does not already exist.
         if (dbAdapter == null) {
-            //TODO(clidwin): Find context for when the application isn't open
-            dbAdapter = new DatabaseAdapter(getApplicationContext());
+            dbAdapter = new DatabaseAdapter(this);
             dbAdapter.open();
         }
 
@@ -104,6 +105,8 @@ public class GpsLocationService extends Service implements LocationListener {
             long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
             mostRecentPin.setDuration(duration);
             dbAdapter.updateEntry(mostRecentPin);
+        } else {
+            Log.d(TAG, "No recent pin found");
         }
 
         dbAdapter.addNewEntry(newPin);
@@ -115,8 +118,8 @@ public class GpsLocationService extends Service implements LocationListener {
     }
 
     /**
-     * @param value
-     * @return
+     * @param value The number to round.
+     * @return The value rounded to four decimal places of precision.
      */
     private double roundValue(double value) {
         int precision = 10000; // Four decimal places
