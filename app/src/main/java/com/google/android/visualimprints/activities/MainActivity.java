@@ -16,7 +16,6 @@
 
 package com.google.android.visualimprints.activities;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,7 +23,6 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -93,7 +91,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         selectedRows = new ArrayList<>();
 
         // Update values using data stored in the Bundle.
-        updateValuesFromBundle(savedInstanceState);
+        //updateValuesFromBundle(savedInstanceState);
         connectToDatabase();
         openReceiver();
     }
@@ -169,10 +167,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         longText.setText("" + pin.getLocation().getLongitude());
         row.addView(longText);*/
 
-        if (pin.getAddress() != null) {
-
-        }
-
         mAllLocationsTable.addView(row, index);
     }
 
@@ -185,10 +179,9 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
      * @return the formatted time
      */
     private String formatDuration(long duration) {
-        String formatted = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(duration),
+        return String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(duration),
                 TimeUnit.MILLISECONDS.toMinutes(duration) % TimeUnit.HOURS.toMinutes(1),
                 TimeUnit.MILLISECONDS.toSeconds(duration) % TimeUnit.MINUTES.toSeconds(1));
-        return formatted;
     }
 
     /**

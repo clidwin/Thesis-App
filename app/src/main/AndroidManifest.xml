@@ -25,7 +25,6 @@ limitations under the License.
     ACCESS_FINE_LOCATION combined with a fast update interval (5 seconds) uses Fused Location
     Provider API and returns location updates that are accurate to within a few feet.
     -->
-    <uses-sdk android:minSdkVersion="11" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 

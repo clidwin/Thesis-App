@@ -86,20 +86,18 @@ public class GpsLocationService extends Service implements LocationListener {
 
             // Compare latitudes and longitudes to see if they're approximately the same location
             // From //stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
-            if (roundValue(newLocation.getLatitude()) == roundValue(recentLocation.getLatitude())) {
-                if (roundValue(newLocation.getLongitude()) ==
-                        roundValue(recentLocation.getLongitude())) {
-                    // The locations are geographically similar
-                    Log.d(TAG, "Locations are similar");
+            if (distanceBetweenLocations(newLocation, recentLocation) > newLocation.getAccuracy()) {
+                // The locations are geographically similar
+                Log.d(TAG, "Locations are similar");
 
-                    long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
-                    mostRecentPin.setDuration(duration);
-                    dbAdapter.updateEntry(mostRecentPin);
+                long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
+                mostRecentPin.setDuration(duration);
+                dbAdapter.updateEntry(mostRecentPin);
 
-                    sendBroadcast(Constants.BROADCAST_UPDATED_LOCATION);
-                    return;
-                }
+                sendBroadcast(Constants.BROADCAST_UPDATED_LOCATION);
+                return;
             }
+
             // Even if the location doesn't match, we want to update the duration
             // of the last known location.
             long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
@@ -118,18 +116,49 @@ public class GpsLocationService extends Service implements LocationListener {
     }
 
     /**
-     * @param value The number to round.
-     * @return The value rounded to four decimal places of precision.
+     * Calculates the distance in meters between two geo coordinates.
+     * //stackoverflow.com/questions/4102520/how-to-transform-a-distance-from-degrees-to-metres
+     *
+     * @param fromLocation The first location of reference
+     * @param toLocation   The second location of reference
+     * @return the distance between the locations (in meters)
      */
-    private double roundValue(double value) {
-        int precision = 10000; // Four decimal places
-        return (double) Math.round(value * precision) / precision;
+    private double distanceBetweenLocations(Location fromLocation, Location toLocation) {
+        double lat1 = roundValue(fromLocation.getLatitude());
+        double lat2 = roundValue(toLocation.getLatitude());
+        double long1 = roundValue(fromLocation.getLongitude());
+        double long2 = roundValue(toLocation.getLongitude());
+
+
+        int earthRadius = 6371; // km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(long2 - long1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) *
+                        Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadius * c;
     }
 
+    /**
+     * Streams a message to anyone listening to this service.
+     *
+     * @param message The extra information to go in the broadcast.
+     */
     private void sendBroadcast(String message) {
         Intent gpsIntent = new Intent(Constants.BROADCAST_ACTION)
                 .putExtra(Constants.BROADCAST_UPDATE, message);
         LocalBroadcastManager.getInstance(this).sendBroadcast(gpsIntent);
+    }
+
+    /**
+     * @param value The number to round.
+     * @return The value rounded to eight decimal places of precision.
+     */
+    private double roundValue(double value) {
+        int precision = 100000000; // Eight decimal places
+        return (double) Math.round(value * precision) / precision;
     }
 
     @Override

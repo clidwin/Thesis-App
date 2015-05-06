@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.util.Log;
 
 import com.google.android.visualimprints.Constants;
 import com.google.android.visualimprints.GeospatialPin;
@@ -22,6 +23,7 @@ import java.util.Date;
  * @version April 27, 2015
  */
 public class DatabaseAdapter {
+    private static final String TAG = "vi-database-adapter";
 
     private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
@@ -59,6 +61,7 @@ public class DatabaseAdapter {
                 DatabaseHelper.Keys.TABLE_NAME,
                 DatabaseHelper.Keys.COLUMN_NAME_NULLABLE,
                 values);
+        Log.d(TAG, "New entry added.");
     }
 
     /**
@@ -79,10 +82,10 @@ public class DatabaseAdapter {
         values.put(DatabaseHelper.Keys.COLUMN_NAME_DURATION, pin.getDuration());
         values.put(
                 DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT,
-                String.valueOf(pin.getLocation().getLatitude()));
+                String.valueOf(roundValue(pin.getLocation().getLatitude())));
         values.put(
                 DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LONG,
-                String.valueOf(pin.getLocation().getLongitude()));
+                String.valueOf(roundValue(pin.getLocation().getLongitude())));
 
         return values;
     }
@@ -180,10 +183,27 @@ public class DatabaseAdapter {
         }
     }
 
+    /**
+     * Rounds a value to eight decimal places of precision.
+     *
+     * @param value The number to round.
+     * @return The rounded value.
+     */
+    private double roundValue(double value) {
+        int precision = 100000000; // Eight decimal places
+        return (double) Math.round(value * precision) / precision;
+    }
+
+    /**
+     * Retrieve an entity from the database by its id.
+     *
+     * @param id The identification value of the entry.
+     * @return a row of the database as a {@link com.google.android.visualimprints.GeospatialPin}
+     */
     public GeospatialPin getEntryById(int id) {
         String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
         String selection = DatabaseHelper.Keys._ID + " LIKE ?";
-        String [] query = {String.valueOf(id)};
+        String[] query = {String.valueOf(id)};
 
         Cursor c = database.query(
                 DatabaseHelper.Keys.TABLE_NAME,         // The table to query
@@ -204,6 +224,11 @@ public class DatabaseAdapter {
         return null;
     }
 
+    /**
+     * Modify an entry in the database.
+     *
+     * @param pin The entity with values to update in the database.
+     */
     public void updateEntry(GeospatialPin pin) {
         ContentValues values = generateContentValues(pin);
         int id = pin.getArrivalTime().hashCode();
@@ -211,6 +236,11 @@ public class DatabaseAdapter {
         database.update(DatabaseHelper.Keys.TABLE_NAME, values, "_id=" + id, null);
     }
 
+    /**
+     * Remove a row in the database.
+     *
+     * @param pin The {@link com.google.android.visualimprints.GeospatialPin} to remove.
+     */
     public void deleteEntry(GeospatialPin pin) {
         int id = pin.getArrivalTime().hashCode();
 
