@@ -4,7 +4,7 @@ package com.google.android.visualimprints;
  * Constant values reused in this sample.
  *
  * @author Christina Lidwin (clidwin)
- * @version April 27, 2015
+ * @version May 06, 2015
  */
 public final class Constants {
     public static final int SUCCESS_RESULT = 0;
@@ -30,7 +30,7 @@ public final class Constants {
     /**
      * Desired interval for location updates in milliseconds (updates may be more or less frequent)
      */
-    public static final long UPDATE_INTERVAL = 20000;
+    public static final long UPDATE_INTERVAL = 30000; //30 seconds
 
     /**
      * Desired distance to receive location updates in meters (updates may be more or less frequent)
@@ -42,5 +42,17 @@ public final class Constants {
      * https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
      */
     public static final String DATABASE_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSZ EEE";
+
+    /**
+     * String code based on:
+     * https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+     */
+    public static final String DATABASE_DATE_FORMAT = "yyyy-MM-dd";
+
+    /**
+     * String code based on:
+     * https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+     */
+    public static final String DATABASE_TIME_FORMAT = "HH:mm:ss.SSSZ EEE";
 }
 

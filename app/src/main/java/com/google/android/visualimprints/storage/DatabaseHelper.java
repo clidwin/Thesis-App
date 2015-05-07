@@ -9,10 +9,10 @@ import android.provider.BaseColumns;
  * Class handling the creation, deletion, and upgrade of the database.
  *
  * @author Christina Lidwin (clidwin)
- * @version April 20, 2015
+ * @version May 06, 2015
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
     private static final String DATABASE_NAME = "GeospatialPins.db";
 
     private static final String REAL_TYPE = " REAL";
@@ -25,6 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String GEOSPATIAL_PINS_TABLE_CREATE =
             "CREATE TABLE " + Keys.TABLE_NAME + " (" +
                     Keys._ID + " INTEGER PRIMARY KEY," +
+                    Keys.COLUMN_NAME_ARRIVAL_DATE + TEXT_TYPE + COMMA_SEP +
                     Keys.COLUMN_NAME_ARRIVAL_TIME + TEXT_TYPE + COMMA_SEP +
                     Keys.COLUMN_NAME_ADDRESS + TEXT_TYPE + COMMA_SEP +
                     Keys.COLUMN_NAME_DURATION + INTEGER_TYPE + COMMA_SEP +
@@ -66,17 +67,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         public static final String TABLE_NAME = "pins";
         // Column names
         public static final String COLUMN_NAME_NULLABLE = null;
+        public static final String COLUMN_NAME_ARRIVAL_DATE = "arrivalDate";
         public static final String COLUMN_NAME_ARRIVAL_TIME = "arrivalTime";
         public static final String COLUMN_NAME_ADDRESS = "address";
         public static final String COLUMN_NAME_DURATION = "duration";
         public static final String COLUMN_NAME_LOCATION_LAT = "locationLat";
         public static final String COLUMN_NAME_LOCATION_LONG = "locationLong";
         private static String[] allColumns = {
-                DatabaseHelper.Keys._ID,
-                DatabaseHelper.Keys.COLUMN_NAME_ADDRESS,
-                DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME,
-                DatabaseHelper.Keys.COLUMN_NAME_DURATION,
-                DatabaseHelper.Keys.COLUMN_NAME_LOCATION_LAT,
+                Keys._ID,
+                Keys.COLUMN_NAME_ARRIVAL_DATE,
+                Keys.COLUMN_NAME_ADDRESS,
+                Keys.COLUMN_NAME_ARRIVAL_TIME,
+                Keys.COLUMN_NAME_DURATION,
+                Keys.COLUMN_NAME_LOCATION_LAT,
                 Keys.COLUMN_NAME_LOCATION_LONG
         };
 
