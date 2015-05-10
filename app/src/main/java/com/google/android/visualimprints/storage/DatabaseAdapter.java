@@ -9,7 +9,7 @@ import android.location.Location;
 import android.util.Log;
 
 import com.google.android.visualimprints.Constants;
-import com.google.android.visualimprints.GeospatialPin;
+import com.google.android.visualimprints.location.GeospatialPin;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,7 +20,7 @@ import java.util.Date;
  * Facilitates communication between the application and its database.
  *
  * @author Christina Lidwin (clidwin)
- * @version May 06, 2015
+ * @version May 08, 2015
  */
 public class DatabaseAdapter {
     private static final String TAG = "vi-database-adapter";
@@ -96,7 +96,7 @@ public class DatabaseAdapter {
 
     /**
      * @return the most recent entry in the database as a
-     * {@link com.google.android.visualimprints.GeospatialPin} object
+     *      {@link com.google.android.visualimprints.location.GeospatialPin} object
      */
     public GeospatialPin getMostRecentEntry() {
         String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
@@ -122,7 +122,37 @@ public class DatabaseAdapter {
 
     /**
      * @return all entries in the database as a list of
-     * {@link com.google.android.visualimprints.GeospatialPin} objects
+     *      {@link com.google.android.visualimprints.location.GeospatialPin} objects
+     */
+    public ArrayList<String> getAllEntryDates() {
+        String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_DATE + " DESC, " +
+                DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
+
+        Cursor c = database.query(
+                DatabaseHelper.Keys.TABLE_NAME,         // The table to query
+                DatabaseHelper.Keys.getAllColumns(),    // The columns to return
+                null,                                   // The columns for the WHERE clause
+                null,                                   // The values for the WHERE clause
+                null,                                   // Row groupings
+                null,                                   // Row group filters
+                sortOrder                               // Sort order
+        );
+
+        ArrayList<String> recordedDates = new ArrayList<>();
+        if (c.moveToFirst()) {
+            do {
+                String arrivalDate = c.getString(
+                        c.getColumnIndexOrThrow(DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_DATE));
+                recordedDates.add(arrivalDate);
+            } while (c.moveToNext());
+        }
+        c.close();
+        return recordedDates;
+    }
+
+    /**
+     * @return all entries in the database as a list of
+     *      {@link com.google.android.visualimprints.location.GeospatialPin} objects
      */
     public ArrayList<GeospatialPin> getAllEntries() {
         String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_DATE + " DESC, " +
@@ -149,7 +179,7 @@ public class DatabaseAdapter {
     }
 
     /**
-     * Creates a {@link com.google.android.visualimprints.GeospatialPin} object from database row
+     * Creates a {@link com.google.android.visualimprints.location.GeospatialPin} object from database row
      * components.
      *
      * @param c {@link android.database.Cursor} A database pointer pointing to a data row
@@ -205,7 +235,7 @@ public class DatabaseAdapter {
      * Retrieve an entity from the database by its id.
      *
      * @param id The identification value of the entry.
-     * @return a row of the database as a {@link com.google.android.visualimprints.GeospatialPin}
+     * @return a row of the database as a {@link com.google.android.visualimprints.location.GeospatialPin}
      */
     public GeospatialPin getEntryById(int id) {
         String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
@@ -246,7 +276,7 @@ public class DatabaseAdapter {
     /**
      * Remove a row in the database.
      *
-     * @param pin The {@link com.google.android.visualimprints.GeospatialPin} to remove.
+     * @param pin The {@link com.google.android.visualimprints.location.GeospatialPin} to remove.
      */
     public void deleteEntry(GeospatialPin pin) {
         int id = pin.getArrivalTime().hashCode();

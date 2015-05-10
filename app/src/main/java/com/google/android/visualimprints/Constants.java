@@ -4,7 +4,7 @@ package com.google.android.visualimprints;
  * Constant values reused in this sample.
  *
  * @author Christina Lidwin (clidwin)
- * @version May 06, 2015
+ * @version May 09, 2015
  */
 public final class Constants {
     public static final int SUCCESS_RESULT = 0;
@@ -35,7 +35,7 @@ public final class Constants {
     /**
      * Desired distance to receive location updates in meters (updates may be more or less frequent)
      */
-    public static final long UPDATE_DISTANCE = 5;
+    public static final long UPDATE_DISTANCE = 10;
 
     /**
      * String code based on:

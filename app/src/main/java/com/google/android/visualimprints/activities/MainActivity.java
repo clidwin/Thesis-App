@@ -23,25 +23,28 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Chronometer;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.visualimprints.Constants;
-import com.google.android.visualimprints.GeospatialPin;
+import com.google.android.visualimprints.location.GeospatialPin;
 import com.google.android.visualimprints.VisualImprintsApplication;
 import com.google.android.visualimprints.storage.DatabaseAdapter;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -52,9 +55,9 @@ import java.util.concurrent.TimeUnit;
  * Based on the samples from: https://github.com/googlesamples/android-play-location/
  *
  * @author Christina Lidwin (clidwin)
- * @version April 27, 2015
+ * @version May 09, 2015
  */
-public class MainActivity extends ActionBarActivity implements OnClickListener {
+public class MainActivity extends AppCompatActivity implements OnClickListener {
     protected static final String TAG = "visual-imprints-main";
     // Keys for storing activity state in the Bundle.
     protected final static String LOCATION_KEY = "location-key";
@@ -67,10 +70,12 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
     // UI Widgets.
     protected TableLayout mAllLocationsTable;
-    protected TextView mLastUpdateTimeTextView;
+    protected TextView mLastArrivalTimeTextView;
+    protected TextView mLastUpdatedTextView;
     protected TextView mLatitudeTextView;
     protected TextView mLongitudeTextView;
-    protected TextView mLocationAddressTextView;
+    protected TextView mLastLocationTextView;
+    protected Chronometer mDurationCounter;
     private DatabaseAdapter dbAdapter;
 
     private ArrayList<TableRow> selectedRows;
@@ -83,10 +88,12 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
         // Locate the UI widgets.
         mAllLocationsTable = (TableLayout) findViewById(R.id.all_locations_table_layout);
-        mLatitudeTextView = (TextView) findViewById(R.id.latitude_text);
-        mLongitudeTextView = (TextView) findViewById(R.id.longitude_text);
-        mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
-        mLocationAddressTextView = (TextView) findViewById(R.id.location_address_text);
+        mLastLocationTextView = (TextView) findViewById(R.id.last_location_label);
+        mLastUpdatedTextView = (TextView) findViewById(R.id.last_updated_label);
+        mLatitudeTextView = (TextView) findViewById(R.id.coordinates_latitude_text);
+        mLongitudeTextView = (TextView) findViewById(R.id.coordinates_longitude_text);
+        mLastArrivalTimeTextView = (TextView) findViewById(R.id.last_arrival_time_text);
+        mDurationCounter = (Chronometer) findViewById(R.id.duration_counter);
 
         selectedRows = new ArrayList<>();
 
@@ -129,15 +136,16 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
      */
     private void loadDatabaseContents() {
         ArrayList<GeospatialPin> allEntries = dbAdapter.getAllEntries();
+        Log.d(TAG, "Database size: " + allEntries.size());
         for (int i = 1; i < allEntries.size() - 1; i++) {
             GeospatialPin pin = allEntries.get(i-1);
             addLocationToHistoryTable(pin, i);
         }
-        updateUI();
+        updateMostRecentLocation();
     }
 
     /**
-     * Adds the list of {@link com.google.android.visualimprints.GeospatialPin} to the
+     * Adds the list of {@link com.google.android.visualimprints.location.GeospatialPin} to the
      * bottom of the history table.
      *
      * @param pin   The Geospatial Pin to be added to the table.
@@ -163,10 +171,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         durationText.setText(formatDuration(pin.getDuration()));
         row.addView(durationText);
 
-        /*TextView longText = new TextView(this);
-        longText.setText("" + pin.getLocation().getLongitude());
-        row.addView(longText);*/
-
         mAllLocationsTable.addView(row, index);
     }
 
@@ -190,6 +194,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
      * @param savedInstanceState The activity state saved in the Bundle.
      */
     private void updateValuesFromBundle(Bundle savedInstanceState) {
+        //TODO(clidwin): Utilize this method to tell when the location was last updated.
         Log.i(TAG, "Updating values from bundle");
         if (savedInstanceState != null) {
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the
@@ -208,23 +213,33 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
                 //TODO(clidwin): Handle showing this in the UI
             }
 
-            updateUI();
+            updateMostRecentLocation();
         }
     }
 
     /**
      * Updates the latitude, the longitude, and the last location time in the UI.
      */
-    private void updateUI() {
+    private void updateMostRecentLocation() {
         if (mCurrentPin == null) {
             mCurrentPin = dbAdapter.getMostRecentEntry();
         }
         if (mCurrentPin != null) {
+            // Show location information
             mLatitudeTextView.setText(String.valueOf(mCurrentPin.getLocation().getLatitude()));
             mLongitudeTextView.setText(String.valueOf(mCurrentPin.getLocation().getLongitude()));
-            mLastUpdateTimeTextView.setText(
-                    DateFormat.getTimeInstance().format(mCurrentPin.getArrivalTime()));
-            mLocationAddressTextView.setText(formatDuration(mCurrentPin.getDuration()));
+
+            // Format date and time information
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy");
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss z");
+            mLastArrivalTimeTextView.setText(
+                    dateFormat.format(mCurrentPin.getArrivalTime()) + " at " +
+                            timeFormat.format(mCurrentPin.getArrivalTime()));
+
+            // Show a duration counter (based on: http://stackoverflow.com/questions/10862845/)
+            long elapsedRealtimeOffset = System.currentTimeMillis() - SystemClock.elapsedRealtime();
+            mDurationCounter.setBase(mCurrentPin.getArrivalTime().getTime() - elapsedRealtimeOffset);
+            mDurationCounter.start();
         }
     }
 
@@ -353,6 +368,9 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Handles location broadcasts for the main activity.
+     */
     private class GpsLocationReceiver extends BroadcastReceiver {
 
         private GpsLocationReceiver() {
@@ -361,26 +379,40 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-           showToast("Location received");
+           showToast("Location received.");
+           String broadcastUpdate = intent.getStringExtra(Constants.BROADCAST_UPDATE);
 
-           String b = intent.getStringExtra(Constants.BROADCAST_UPDATE);
-           if (b != null) {
-               switch (b) {
+           if (broadcastUpdate != null) {
+               switch (broadcastUpdate) {
                    case Constants.BROADCAST_NEW_LOCATION:
                        if (mCurrentPin != null) {
                            addLocationToHistoryTable(mCurrentPin, 1);
                        }
                        mCurrentPin = dbAdapter.getMostRecentEntry();
-                       updateUI();
+                       processLocationInfo();
                        break;
                    case Constants.BROADCAST_UPDATED_LOCATION:
-                       mCurrentPin = dbAdapter.getMostRecentEntry();
-                       updateUI();
+                       mCurrentPin.setDuration(mDurationCounter.getBase());
+                       processLocationInfo();
                        break;
                    default:
                        break;
                }
            }
+        }
+
+        /**
+         * Updates UI based on new location information.
+         */
+        private void processLocationInfo() {
+            // Update the last time the app looked for a location
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy");
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss ZZZZ");
+            mLastUpdatedTextView.setText(getResources().getString(R.string.last_updated_label) +
+                    " " + timeFormat.format(System.currentTimeMillis()) + " on " +
+                    dateFormat.format(System.currentTimeMillis()));
+
+            updateMostRecentLocation();
         }
     }
 }

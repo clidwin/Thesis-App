@@ -1,4 +1,4 @@
-package com.google.android.visualimprints;
+package com.google.android.visualimprints.location;
 
 import android.location.Address;
 import android.location.Location;

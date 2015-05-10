@@ -21,7 +21,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.visualimprints.Constants;
-import com.google.android.visualimprints.GeospatialPin;
+import com.google.android.visualimprints.location.GeospatialPin;
 import com.google.android.visualimprints.storage.DatabaseAdapter;
 
 import java.util.Date;
@@ -30,24 +30,26 @@ import java.util.Date;
  * Retrieves location information
  *
  * @author Christina Lidwin (clidwin)
- * @version May 06, 2015
+ * @version May 08, 2015
  */
 public class GpsLocationService extends Service
-        implements SensorEventListener, GoogleApiClient.ConnectionCallbacks,
+        implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
+
     private static final String TAG = "gps-location-service";
     private static final double MAX_REST_SPEED = 5;
+
     DatabaseAdapter dbAdapter;
     GeospatialPin mostRecentPin;
     LocationManager locationManager;
     SensorManager mSensorManager;
     Sensor mAccelerometer;
     GoogleApiClient mGoogleApiClient;
-    private LocationRequest mLocationRequest;
-    private ViLocationListener mLocationListener;
-    private long lastUpdate = 0;
-    private float last_x, last_y, last_z;
-    private boolean deviceIsMoving = false;
+    LocationRequest mLocationRequest;
+    ViLocationListener mLocationListener;
+    long lastUpdate = 0;
+    float last_x, last_y, last_z;
+    boolean deviceIsMoving = false;
 
     public GpsLocationService() {
         super();
@@ -72,10 +74,6 @@ public class GpsLocationService extends Service
         }
         mLocationListener = new ViLocationListener();
 
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-
         //subscribeToLocationUpdates();
         Log.d(TAG, "GpsLocationService started.");
     }
@@ -88,7 +86,7 @@ public class GpsLocationService extends Service
 
     /**
      * Calculates the distance in meters between two geo coordinates.
-     * //stackoverflow.com/questions/4102520/how-to-transform-a-distance-from-degrees-to-metres
+     *      http://www.movable-type.co.uk/scripts/latlong.html
      *
      * @param fromLocation The first location of reference
      * @param toLocation   The second location of reference
@@ -101,8 +99,10 @@ public class GpsLocationService extends Service
         double long1 = roundValue(fromLocation.getLongitude(), locationAccuracy);
         double long2 = roundValue(toLocation.getLongitude(), locationAccuracy);
 
+        Log.d(TAG, "Finding distance between (" + lat1 + ", " + long1 +
+                ") and (" + lat2 + ", " + long2 + ")");
 
-        int earthRadius = 6371; // km
+        int earthRadius = 6371 * 1000; // m
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(long2 - long1);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -131,56 +131,14 @@ public class GpsLocationService extends Service
      * @return The value rounded to eight decimal places of precision.
      */
     private double roundValue(double value, int accuracy) {
-        int precision = 10 ^ accuracy; // Eight decimal places
-        return (double) Math.round(value * precision) / precision;
+        double precision = Math.pow(10, accuracy); // Eight decimal places
+        //Log.d(TAG, "Precision: " + precision);
+        return Math.round(value * precision) / precision;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-    //TODO(clidwin): Remove or update this code.
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        float x = event.values[0];
-        float y = event.values[1];
-        float z = event.values[2];
-
-        long curTime = System.currentTimeMillis();
-
-        if (locationManager == null) {
-            this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        }
-
-        if ((curTime - lastUpdate) > 100) {
-            long diffTime = (curTime - lastUpdate);
-            lastUpdate = curTime;
-
-            float speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
-
-            if (speed > MAX_REST_SPEED && !deviceIsMoving) {
-                Log.d(TAG, "device is in motion");
-                //TODO(clidwin): Use whatever provider is available.
-                //locationManager.requestSingleUpdate(
-                //        LocationManager.GPS_PROVIDER, this, Looper.myLooper());
-                deviceIsMoving = true;
-            } else if (speed < MAX_REST_SPEED && deviceIsMoving) {
-                Log.d(TAG, "device is at rest");
-                //locationManager.requestSingleUpdate(
-                //        LocationManager.GPS_PROVIDER, this, Looper.myLooper());
-                deviceIsMoving = false;
-            }
-
-            last_x = x;
-            last_y = y;
-            last_z = z;
-        }
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     @Override
@@ -212,34 +170,61 @@ public class GpsLocationService extends Service
 
     }
 
+    /**
+     * Determines if two locations are the "same".
+     * @param one the first location to test.
+     * @param two the second location to test
+     * @param accuracy the level of accuracy (decimal places) to test.
+     *
+     * @return true if the locations are the same, false otherwise.
+     */
+    public boolean areSameLocation(Location one, Location two, int accuracy) {
+        double lat1 = one.getLatitude();
+        double lat2 = two.getLatitude();
+        double long1 = one.getLongitude();
+        double long2 = two.getLongitude();
+
+        Log.d(TAG, "Checking sameness between (" + roundValue(lat1, accuracy) + ", " +
+                roundValue(long1, accuracy) + ") and (" + roundValue(lat2, accuracy) + ", " +
+                roundValue(long2, accuracy) + ")");
+
+        if (roundValue(lat1, accuracy) == roundValue(lat2, accuracy) &&
+                roundValue(long1, accuracy) == roundValue(long2, accuracy)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public class ViLocationListener implements LocationListener {
         //TODO(clidwin): Break this method into smaller pieces and use accelerometer data to help categorize events as motion or rest
         @Override
         public void onLocationChanged(Location location) {
             Log.d(TAG, location.toString());
 
-            // Add location item to the database.
+            // Create pin from location and retrieve the most recent previously recorded pin.
             GeospatialPin newPin = new GeospatialPin(location);
             if (mostRecentPin == null) {
                 mostRecentPin = dbAdapter.getMostRecentEntry();
             }
+
+
             if (mostRecentPin != null) {
                 Location newLocation = newPin.getLocation();
                 Location recentLocation = mostRecentPin.getLocation();
 
                 // Compare latitudes and longitudes to see if they're approximately the same location
                 int accuracy = 5;
-                if (distanceBetweenLocations(newLocation, recentLocation) > newLocation.getAccuracy() ||
-                        (roundValue(newLocation.getLatitude(), accuracy) ==
-                                roundValue(recentLocation.getLatitude(), accuracy)
-                                && (roundValue(newLocation.getLongitude(), accuracy) ==
-                                roundValue(recentLocation.getLongitude(), accuracy)))) {
+                if (areSameLocation(newLocation, recentLocation, accuracy)
+                        || distanceBetweenLocations(newLocation, recentLocation) <
+                            Constants.UPDATE_DISTANCE) {
                     // The locations are geographically similar
-                    Log.d(TAG, "Locations are similar");
+                    Log.d(TAG, "Locations are similar for an accuracy of " +
+                            newLocation.getAccuracy() + " because the distance is " +
+                            distanceBetweenLocations(newLocation, recentLocation));
 
                     long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
                     mostRecentPin.setDuration(duration);
-                    dbAdapter.updateEntry(mostRecentPin);
 
                     sendBroadcast(Constants.BROADCAST_UPDATED_LOCATION);
                     return;
