@@ -4,7 +4,7 @@ android {
     compileSdkVersion 21
     buildToolsVersion "21.1.2"
     defaultConfig {
-        applicationId "com.google.android.visualimprints.location"
+        applicationId "com.clidwin.android.visualimprints.location"
         minSdkVersion 17
         targetSdkVersion 21
         versionCode 1

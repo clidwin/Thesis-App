@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.google.android.visualimprints.activities">
+    package="com.clidwin.android.visualimprints.activities">
     <!--
     Android has two location request settings: {@code ACCESS_COARSE_LOCATION} and
     {@code ACCESS_FINE_LOCATION}. These settings control the accuracy of the current location.
@@ -31,7 +31,7 @@ limitations under the License.
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name="com.google.android.visualimprints.VisualImprintsApplication"
+        android:name="com.clidwin.android.visualimprints.VisualImprintsApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -42,7 +42,7 @@ limitations under the License.
             android:value="@integer/google_play_services_version" />
 
         <!-- Start GpsLocationService when the device is turned on (independent of app state) !-->
-        <receiver android:name="com.google.android.visualimprints.StartupBroadcastReceiver">
+        <receiver android:name="com.clidwin.android.visualimprints.StartupBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
@@ -63,11 +63,11 @@ limitations under the License.
         service, even when using an explicit intent.
         -->
         <service
-            android:name="com.google.android.visualimprints.services.FetchAddressIntentService"
+            android:name="com.clidwin.android.visualimprints.services.FetchAddressIntentService"
             android:exported="false"
             android:label="FetchAddressIntentService" />
         <service
-            android:name="com.google.android.visualimprints.services.GpsLocationService"
+            android:name="com.clidwin.android.visualimprints.services.GpsLocationService"
             android:enabled="true"
             android:exported="false"
             android:label="GpsLocationService" />
