@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="Accent">#8BC34A</color>
-    <color name="Divider">#B6B6B6</color>
-    <color name="Primary">#009688</color>
-    <color name="PrimaryDark">#00796B</color>
-    <color name="PrimaryLight">#B2DFDB</color>
-    <color name="TextPrimary">#212121</color>
-    <color name="TextSecondary">#727272</color>
+    <color name="grey_300">#E0E0E0</color>
 </resources>
