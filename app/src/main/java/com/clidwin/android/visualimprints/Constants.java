@@ -59,5 +59,6 @@ public final class Constants {
      * https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
      */
     public static final String DATABASE_TIME_FORMAT = "HH:mm:ss.SSSZ EEE";
+    public static final String BROADCAST_SERVICE_START = "GPS service started";
 }
 

@@ -10,7 +10,7 @@ import android.os.ResultReceiver;
 import android.util.Log;
 
 import com.clidwin.android.visualimprints.Constants;
-import com.clidwin.android.visualimprints.activities.R;
+import com.clidwin.android.visualimprints.R;
 
 import java.io.IOException;
 import java.util.List;
