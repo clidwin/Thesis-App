@@ -1,0 +1,18 @@
+<resources>
+    <!--
+    TODO: Before you run your application, you need a Google Maps API key.
+
+    To get one, follow this link, follow the directions and press "Create" at the end:
+
+https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=C2:0D:28:23:21:95:A1:B0:9A:E6:09:79:7C:D3:53:87:87:A3:46:6E%3Bcom.clidwin.android.visualimprints.activities
+
+    You can also add your credentials to an existing key, using this line:
+    C2:0D:28:23:21:95:A1:B0:9A:E6:09:79:7C:D3:53:87:87:A3:46:6E;com.clidwin.android.visualimprints.activities
+
+    Once you have your key (it starts with "AIza"), replace the "google_maps_key"
+    string in this file.
+    -->
+    <string name="google_maps_key" translatable="false" templateMergeStrategy="preserve">
+        YOUR_KEY_HERE
+    </string>
+</resources>
