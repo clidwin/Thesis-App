@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     ViewPager pager;
     ViewPagerAdapter viewPageAdapter;
     SlidingTabLayout tabs;
-    CharSequence titles[]={"Visual", "Map","Raw Data"};
+    CharSequence titles[]={"Visualization", "Raw Data"};
     private DatabaseAdapter dbAdapter;
 
     @Override
@@ -109,9 +109,9 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        /*if (id == R.id.action_settings) {
             return true;
-        }
+        }*/
 
         return super.onOptionsItemSelected(item);
     }

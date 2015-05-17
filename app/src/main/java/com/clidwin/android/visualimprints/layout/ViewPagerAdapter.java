@@ -6,7 +6,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.clidwin.android.visualimprints.fragments.MapViewFragment;
 import com.clidwin.android.visualimprints.fragments.RawDataFragment;
-import com.clidwin.android.visualimprints.fragments.TestFragment;
+import com.clidwin.android.visualimprints.fragments.VisualizationFragment;
 
 /**
  * Manages the fragment views within an activity.
@@ -30,11 +30,11 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         if(position == 0) {
-            TestFragment testTab = new TestFragment();
-            return testTab;
-        } else if (position == 1) {
+            VisualizationFragment visualizationTab = new VisualizationFragment();
+            return visualizationTab;
+        /*} else if (position == 1) {
             MapViewFragment mapViewTab = new MapViewFragment();
-            return mapViewTab;
+            return mapViewTab;*/
         } else{
             RawDataFragment rawDataTab = new RawDataFragment();
             return rawDataTab;

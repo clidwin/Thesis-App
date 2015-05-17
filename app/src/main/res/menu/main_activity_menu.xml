@@ -2,13 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:yourapp="http://schemas.android.com/apk/res-auto" >
     <!-- Settings, should always be in the overflow -->
-    <item android:id="@+id/edit_rows"
-        android:title="@string/edit_rows"
-        android:icon="@drawable/ic_action_edit"
-        yourapp:showAsAction="ifRoom"/>
-
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:icon="@drawable/ic_action_settings"
+    <item android:id="@+id/refresh_rows"
+        android:title="@string/refresh_rows"
+        android:icon="@drawable/ic_action_refresh"
         yourapp:showAsAction="ifRoom"/>
 </menu>

@@ -84,6 +84,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
 
     private ArrayList<TableRow> selectedRows;
     private boolean rowsClickable = false;
+    private GpsLocationReceiver mGpsLocationReceiver;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
@@ -111,6 +112,18 @@ public class RawDataFragment extends Fragment implements OnClickListener {
         return view;
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        closeReceiver();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        openReceiver();
+    }
+
     private void linkUiElements(View view) {
         mAllLocationsListLayout =
                 (LinearLayout) view.findViewById(R.id.all_locations_linear_layout);
@@ -125,10 +138,14 @@ public class RawDataFragment extends Fragment implements OnClickListener {
     private void openReceiver() {
         IntentFilter mGpsLocationFilter = new IntentFilter(Constants.BROADCAST_ACTION);
 
-        GpsLocationReceiver mGpsLocationReceiver = new GpsLocationReceiver();
+        mGpsLocationReceiver = new GpsLocationReceiver();
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
                 mGpsLocationReceiver,
                 mGpsLocationFilter);
+    }
+
+    private void closeReceiver() {
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mGpsLocationReceiver);
     }
 
     /**
@@ -186,6 +203,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
                         return;
                     }
 
+                    //TODO(clidwin): Figure out why toast isn't showing up
                     showToast("Loading data...");
                     String dateText = ((TextView) row.getChildAt(0)).getText().toString();
                     Date date;
@@ -396,17 +414,24 @@ public class RawDataFragment extends Fragment implements OnClickListener {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
-            case R.id.edit_rows:
+            case R.id.refresh_rows:
+                mAllLocationsListLayout.removeAllViewsInLayout();
+                loadDatabaseContents();
+                return true;
+            /*case R.id.edit_rows:
                 rowsClickable = !rowsClickable;
                 toggleClickableRows();
                 return true;
             case R.id.action_settings:
                 showToast("Merging selected rows.");
                 mergeLocations();
-                return true;
+                return true;*/
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void removeAllDatabaseContents() {
     }
 
     private void mergeLocations() {
@@ -528,6 +553,10 @@ public class RawDataFragment extends Fragment implements OnClickListener {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            if(!isAdded()) {
+                return;
+            }
+
            String broadcastUpdate = intent.getStringExtra(Constants.BROADCAST_UPDATE);
            if (broadcastUpdate != null) {
                switch (broadcastUpdate) {

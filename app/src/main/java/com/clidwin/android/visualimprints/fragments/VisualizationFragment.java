@@ -15,12 +15,12 @@ import com.clidwin.android.visualimprints.R;
  * @author Christina Lidwin
  * @version May 12, 2015
  */
-public class TestFragment extends Fragment {
+public class VisualizationFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View v =inflater.inflate(R.layout.fragment_test,container,false);
+        View v =inflater.inflate(R.layout.fragment_visualization,container,false);
         return v;
     }
 }

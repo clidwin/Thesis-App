@@ -1,8 +1,13 @@
 package com.clidwin.android.visualimprints.services;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -11,15 +16,17 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.clidwin.android.visualimprints.Constants;
+import com.clidwin.android.visualimprints.R;
+import com.clidwin.android.visualimprints.activities.MainActivity;
+import com.clidwin.android.visualimprints.location.GeospatialPin;
+import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.clidwin.android.visualimprints.Constants;
-import com.clidwin.android.visualimprints.location.GeospatialPin;
-import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 
 import java.util.Date;
 
@@ -27,7 +34,7 @@ import java.util.Date;
  * Retrieves location information
  *
  * @author Christina Lidwin (clidwin)
- * @version May 08, 2015
+ * @version May 16, 2015
  */
 public class GpsLocationService extends Service
         implements GoogleApiClient.ConnectionCallbacks,
@@ -56,6 +63,7 @@ public class GpsLocationService extends Service
     public void onCreate() {
         super.onCreate();
 
+        // Connect to Google Play Services.
         if (GooglePlayServicesUtil.isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addApi(LocationServices.API)
@@ -72,7 +80,27 @@ public class GpsLocationService extends Service
         mLocationListener = new ViLocationListener();
 
         //subscribeToLocationUpdates();
-        Log.d(TAG, "GpsLocationService started.");
+        createNotification();
+    }
+
+    /**
+     * Creates a notification, which makes the service a foreground process
+     * and less likely to be killed by another background task.
+     */
+    private void createNotification() {
+        Intent notificationIntent = new Intent (getApplicationContext(), MainActivity.class);
+        notificationIntent.setFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent intent = PendingIntent.getActivity(getApplicationContext(), 0,
+                notificationIntent, 0);
+
+        Notification notification = new Notification.Builder(getApplicationContext())
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText("Location service is running.")
+                .setContentIntent(intent)
+                .setSmallIcon(R.drawable.ic_launcher)
+                .build();
+        startForeground(81015, notification);
     }
 
     @Override
@@ -140,11 +168,12 @@ public class GpsLocationService extends Service
 
     @Override
     public void onConnected(Bundle bundle) {
-        mLocationRequest = LocationRequest.create();
         //TODO(clidwin): Create a setting allowing people to do this
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        mLocationRequest.setInterval(Constants.UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(Constants.FASTEST_UPDATE_INTERVAL);
+        mLocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(Constants.UPDATE_INTERVAL)
+                .setFastestInterval(Constants.FASTEST_UPDATE_INTERVAL)
+                .setSmallestDisplacement(Constants.UPDATE_DISTANCE);
 
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, mLocationListener);
@@ -213,9 +242,7 @@ public class GpsLocationService extends Service
 
                 // Compare latitudes and longitudes to see if they're approximately the same location
                 int accuracy = 5;
-                if (areSameLocation(newLocation, recentLocation, accuracy)
-                        || distanceBetweenLocations(newLocation, recentLocation) <
-                            Constants.UPDATE_DISTANCE) {
+                if (areSameLocation(newLocation, recentLocation, accuracy)) {
                     // The locations are geographically similar
                     Log.d(TAG, "Locations are similar for an accuracy of " +
                             newLocation.getAccuracy() + " because the distance is " +
