@@ -3,14 +3,10 @@ package com.clidwin.android.visualimprints.services;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -34,26 +30,21 @@ import java.util.Date;
  * Retrieves location information
  *
  * @author Christina Lidwin (clidwin)
- * @version May 16, 2015
+ * @version June 01, 2015
  */
 public class GpsLocationService extends Service
         implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "gps-location-service";
-    private static final double MAX_REST_SPEED = 5;
 
     DatabaseAdapter dbAdapter;
     GeospatialPin mostRecentPin;
-    LocationManager locationManager;
     SensorManager mSensorManager;
     Sensor mAccelerometer;
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
     ViLocationListener mLocationListener;
-    long lastUpdate = 0;
-    float last_x, last_y, last_z;
-    boolean deviceIsMoving = false;
 
     public GpsLocationService() {
         super();
@@ -74,21 +65,30 @@ public class GpsLocationService extends Service
             if (!mGoogleApiClient.isConnected() || !mGoogleApiClient.isConnecting()) {
                 mGoogleApiClient.connect();
             }
+
+            if (!mGoogleApiClient.isConnected()) {
+                createNotification("Location service is offline.");
+                //ConnectionResult result = mGoogleApiClient.ge
+                Log.e(TAG, "GPS Location is not connected.");
+            }
         } else {
-            Log.e(TAG, "unable to connect to google play services.");
+            Log.e(TAG, "Unable to connect to Google Play Services.");
         }
         mLocationListener = new ViLocationListener();
 
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
         //subscribeToLocationUpdates();
-        createNotification();
+        createNotification("Location service is has been created.");
     }
 
     /**
      * Creates a notification, which makes the service a foreground process
      * and less likely to be killed by another background task.
      */
-    private void createNotification() {
-        Intent notificationIntent = new Intent (getApplicationContext(), MainActivity.class);
+    private void createNotification(String contentText) {
+        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
         notificationIntent.setFlags(
                 Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent intent = PendingIntent.getActivity(getApplicationContext(), 0,
@@ -96,7 +96,7 @@ public class GpsLocationService extends Service
 
         Notification notification = new Notification.Builder(getApplicationContext())
                 .setContentTitle(getString(R.string.app_name))
-                .setContentText("Location service is running.")
+                .setContentText(contentText)
                 .setContentIntent(intent)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .build();
@@ -111,7 +111,7 @@ public class GpsLocationService extends Service
 
     /**
      * Calculates the distance in meters between two geo coordinates.
-     *      http://www.movable-type.co.uk/scripts/latlong.html
+     * http://www.movable-type.co.uk/scripts/latlong.html
      *
      * @param fromLocation The first location of reference
      * @param toLocation   The second location of reference
@@ -151,13 +151,13 @@ public class GpsLocationService extends Service
 
     /**
      * Source:
-     *      //stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
+     * //stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
+     *
      * @param value The number to round.
      * @return The value rounded to eight decimal places of precision.
      */
     private double roundValue(double value, int accuracy) {
         double precision = Math.pow(10, accuracy); // Eight decimal places
-        //Log.d(TAG, "Precision: " + precision);
         return Math.round(value * precision) / precision;
     }
 
@@ -168,13 +168,16 @@ public class GpsLocationService extends Service
 
     @Override
     public void onConnected(Bundle bundle) {
-        //TODO(clidwin): Create a setting allowing people to do this
+        //TODO(clidwin): Create a setting allowing people to change these
         mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(Constants.UPDATE_INTERVAL)
                 .setFastestInterval(Constants.FASTEST_UPDATE_INTERVAL)
                 .setSmallestDisplacement(Constants.UPDATE_DISTANCE);
 
+        // Request last location to get an immediate update, then request continuous updates.
+        LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        //TODO(clidwin) Use requestLocationsUpdate with PendingIntent instead of LocationListener
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, mLocationListener);
 
@@ -189,20 +192,20 @@ public class GpsLocationService extends Service
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        //TODO(clidwin): Indicate when connection is suspended.
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
+        //TODO(clidwin): Indicate in the UI when this happens.
     }
 
     /**
      * Determines if two locations are the "same".
-     * @param one the first location to test.
-     * @param two the second location to test
-     * @param accuracy the level of accuracy (decimal places) to test.
      *
+     * @param one      the first location to test.
+     * @param two      the second location to test
+     * @param accuracy the level of accuracy (decimal places) to test.
      * @return true if the locations are the same, false otherwise.
      */
     public boolean areSameLocation(Location one, Location two, int accuracy) {
@@ -215,16 +218,14 @@ public class GpsLocationService extends Service
                 roundValue(long1, accuracy) + ") and (" + roundValue(lat2, accuracy) + ", " +
                 roundValue(long2, accuracy) + ")");
 
-        if (roundValue(lat1, accuracy) == roundValue(lat2, accuracy) &&
-                roundValue(long1, accuracy) == roundValue(long2, accuracy)) {
-            return true;
-        }
-
-        return false;
+        return roundValue(lat1, accuracy) == roundValue(lat2, accuracy) &&
+                roundValue(long1, accuracy) == roundValue(long2, accuracy);
     }
 
+    /**
+     * Handles documenting a new location when the service finds one.
+     */
     public class ViLocationListener implements LocationListener {
-        //TODO(clidwin): Break this method into smaller pieces and use accelerometer data to help categorize events as motion or rest
         @Override
         public void onLocationChanged(Location location) {
             Log.d(TAG, location.toString());
@@ -235,40 +236,38 @@ public class GpsLocationService extends Service
                 mostRecentPin = dbAdapter.getMostRecentEntry();
             }
 
-
             if (mostRecentPin != null) {
                 Location newLocation = newPin.getLocation();
                 Location recentLocation = mostRecentPin.getLocation();
 
                 // Compare latitudes and longitudes to see if they're approximately the same location
-                int accuracy = 5;
-                if (areSameLocation(newLocation, recentLocation, accuracy)) {
-                    // The locations are geographically similar
-                    Log.d(TAG, "Locations are similar for an accuracy of " +
-                            newLocation.getAccuracy() + " because the distance is " +
-                            distanceBetweenLocations(newLocation, recentLocation));
+                int accuracy = 4;
+                if (areSameLocation(newLocation, recentLocation, accuracy) ||
+                        distanceBetweenLocations(newLocation, recentLocation)
+                                < Constants.UPDATE_DISTANCE) {
+                    Log.d(TAG, "Locations are geographically similar");
 
-                    long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
+                    long duration = (new Date()).getTime()
+                            - mostRecentPin.getArrivalTime().getTime();
                     mostRecentPin.setDuration(duration);
 
                     sendBroadcast(Constants.BROADCAST_UPDATED_LOCATION);
                     return;
                 }
 
+                //TODO(clidwin): decrease database calls made by these actions.
                 // Even if the location doesn't match, we want to update the duration
                 // of the last known location.
                 long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
                 mostRecentPin.setDuration(duration);
                 dbAdapter.updateEntry(mostRecentPin);
-            } else {
-                Log.d(TAG, "No recent pin found");
             }
 
             dbAdapter.addNewEntry(newPin);
             mostRecentPin = newPin;
 
             //Broadcast a change was made
-            Log.d(TAG, "Location recorded");
+            Log.d(TAG, "New location recorded");
             sendBroadcast(Constants.BROADCAST_NEW_LOCATION);
         }
     }

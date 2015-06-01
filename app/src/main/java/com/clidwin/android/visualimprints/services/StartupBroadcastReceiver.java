@@ -1,4 +1,4 @@
-package com.clidwin.android.visualimprints;
+package com.clidwin.android.visualimprints.services;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -15,7 +15,6 @@ android {
         applicationId "com.clidwin.android.visualimprints.location"
         minSdkVersion 17
         targetSdkVersion 21
-        versionName '1.5'
     }
     buildTypes {
         release {
@@ -25,8 +24,6 @@ android {
         }
         debug {
         }
-    }
-    productFlavors {
     }
 }
 

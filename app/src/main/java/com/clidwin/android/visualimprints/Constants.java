@@ -30,17 +30,17 @@ public final class Constants {
     /**
      * Desired interval for location updates in milliseconds (updates may be more or less frequent)
      */
-    public static final long UPDATE_INTERVAL = 30000; //30 seconds
+    public static final long UPDATE_INTERVAL = 45000; //45 seconds
 
     /**
-     * Desired interval for location updates in milliseconds (updates may be more or less frequent)
+     * Fastest interval for location updates in milliseconds (updates may be more or less frequent)
      */
-    public static final long FASTEST_UPDATE_INTERVAL = 20000; //20 seconds
+    public static final long FASTEST_UPDATE_INTERVAL = 30000; //30 seconds
 
     /**
      * Desired distance to receive location updates in meters (updates may be more or less frequent)
      */
-    public static final long UPDATE_DISTANCE = 10;
+    public static final long UPDATE_DISTANCE = 0;
 
     /**
      * String code based on:

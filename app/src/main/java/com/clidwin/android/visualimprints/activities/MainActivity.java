@@ -19,6 +19,8 @@
 
 package com.clidwin.android.visualimprints.activities;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +32,7 @@ import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.VisualImprintsApplication;
 import com.clidwin.android.visualimprints.layout.SlidingTabLayout;
 import com.clidwin.android.visualimprints.layout.ViewPagerAdapter;
+import com.clidwin.android.visualimprints.services.GpsLocationService;
 import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 
 /**
@@ -114,5 +117,17 @@ public class MainActivity extends AppCompatActivity {
         }*/
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean isConnected() {
+        String gpsServiceName = GpsLocationService.class.getName();
+
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo serviceInfo : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (gpsServiceName.equals(serviceInfo.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -18,7 +18,6 @@ import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 public class VisualImprintsApplication extends Application {
     private DatabaseAdapter dbAdapter;
 
-
     @Override
     public void onCreate() {
         dbAdapter = new DatabaseAdapter(getApplicationContext());
