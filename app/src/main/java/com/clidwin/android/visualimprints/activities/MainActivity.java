@@ -21,16 +21,20 @@ package com.clidwin.android.visualimprints.activities;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
 
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.VisualImprintsApplication;
-import com.clidwin.android.visualimprints.layout.SlidingTabLayout;
 import com.clidwin.android.visualimprints.layout.ViewPagerAdapter;
 import com.clidwin.android.visualimprints.services.GpsLocationService;
 import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
@@ -45,10 +49,8 @@ import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 public class MainActivity extends AppCompatActivity {
 
     // Declaring Your View and Variables
-    Toolbar toolbar;
     ViewPager pager;
     ViewPagerAdapter viewPageAdapter;
-    SlidingTabLayout tabs;
     CharSequence titles[]={"Visualization", "Raw Data"};
     private DatabaseAdapter dbAdapter;
 
@@ -57,32 +59,74 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Creating The Toolbar and setting it as the Toolbar for the activity
-        toolbar = (Toolbar) findViewById(R.id.tool_bar);
-        setSupportActionBar(toolbar);
-
         viewPageAdapter =  new ViewPagerAdapter(getSupportFragmentManager(), titles);
 
         // Assigning ViewPager View and setting the viewPageAdapter
         pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(viewPageAdapter);
+        pager.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+
+
+        // Configuring autohide options on the menus
+        /*decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);*/
 
         // Assiging the Sliding Tab Layout View
-        tabs = (SlidingTabLayout) findViewById(R.id.tabs);
-        tabs.setDistributeEvenly(true); // To make the Tabs Fixed set this true, This makes the tabs Space Evenly in Available width
+        setupIconTray();
 
-        // Setting Custom Color for the Scroll bar indicator of the Tab View
-        tabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
+        getSupportActionBar().hide();
+
+        connectToDatabase();
+    }
+
+    private void setupIconTray() {
+        //TODO(clidwin): Replace all listeners with feature-ready content.
+
+        ImageButton rawDataButton = (ImageButton) findViewById(R.id.icon_tray_raw_data);
+        rawDataButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public int getIndicatorColor(int position) {
-                return getResources().getColor(R.color.accent_material_light);
+            public void onClick(View v) {
+                openRawData();
             }
         });
 
-        // Setting the ViewPager For the SlidingTabsLayout
-        tabs.setViewPager(pager);
+        ImageButton saveViewButton = (ImageButton) findViewById(R.id.icon_tray_save_view);
+        saveViewButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buildAndShowDialog();
+            }
+        });
 
-        connectToDatabase();
+
+        ImageButton viewParamsButton = (ImageButton) findViewById(R.id.icon_tray_view_parameters);
+        viewParamsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buildAndShowDialog();
+            }
+        });
+
+    }
+
+    private void openRawData() {
+        Intent intent = new Intent(this, RawDataActivity.class);
+        //TODO(clidwin): add any extra data to the intent
+        startActivity(intent);
+    }
+
+    private void buildAndShowDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Feature Unavailable")
+               .setMessage("This feature is coming soon.")
+               .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                   public void onClick(DialogInterface dialog, int id) {
+                       // Do nothing
+                   }
+               });
+        builder.create().show();
     }
 
     /**
@@ -94,8 +138,10 @@ public class MainActivity extends AppCompatActivity {
         dbAdapter = vI.getDatabaseAdapter();
     }
 
+    /**
+     * @return the {@link DatabaseAdapter} being used by this activity
+     */
     public DatabaseAdapter getDatabaseAdapter() { return dbAdapter; }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

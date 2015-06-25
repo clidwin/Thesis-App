@@ -6,4 +6,8 @@
     <item name="last_update_time_text" type="id">Last Updated Time</item>
     <item name="location_address_view" type="id">Address View</item>
     <item name="date_table_item_divider" type="id" />
+
+    <item name="icon_tray_raw_data" type="id" />
+    <item name="icon_tray_save_view" type="id" />
+    <item name="icon_tray_view_parameters" type="id" />
 </resources>

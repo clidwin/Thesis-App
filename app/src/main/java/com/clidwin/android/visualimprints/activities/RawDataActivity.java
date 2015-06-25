@@ -1,39 +1,19 @@
-/**
- * Copyright 2014 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.clidwin.android.visualimprints.fragments;
+package com.clidwin.android.visualimprints.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Location;
-import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.LinearLayout;
@@ -44,7 +24,7 @@ import android.widget.Toast;
 
 import com.clidwin.android.visualimprints.Constants;
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.activities.MainActivity;
+import com.clidwin.android.visualimprints.VisualImprintsApplication;
 import com.clidwin.android.visualimprints.location.GeospatialPin;
 import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 
@@ -56,13 +36,15 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Fragment showing the raw data.
+ * Allows for viewing the text-version of location data.
  *
  * @author Christina Lidwin (clidwin)
- * @version May 14, 2015
+ * @version June 25, 2015
  */
-public class RawDataFragment extends Fragment implements OnClickListener {
-    protected static final String TAG = "visual-imprints-main";
+
+public class RawDataActivity extends AppCompatActivity {
+
+    protected static final String TAG = "visual-imprints-rawData";
     // Keys for storing activity state in the Bundle.
     protected final static String LOCATION_KEY = "location-key";
     protected static final String LOCATION_ADDRESS_KEY = "location-address";
@@ -87,29 +69,20 @@ public class RawDataFragment extends Fragment implements OnClickListener {
     private GpsLocationReceiver mGpsLocationReceiver;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-
-        super.onCreateView(inflater, container, savedInstanceState);
-        Log.d(TAG, "Loading database contents");
-        View view = inflater.inflate(R.layout.fragment_raw_data, container, false);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_raw_data);
 
         // Locate the UI widgets.
-        linkUiElements(view);
+        linkUiElements();
         selectedRows = new ArrayList<>();
 
         // Update values using data stored in the Bundle.
         //updateValuesFromBundle(savedInstanceState);
 
-        MainActivity activity = (MainActivity)getActivity();
-        if (activity != null && isAdded()) {
-            dbAdapter = activity
-                    .getDatabaseAdapter();
-            openReceiver();
-            loadDatabaseContents();
-        }
-
-        return view;
+        connectToDatabase();
+        openReceiver();
+        loadDatabaseContents();
     }
 
     @Override
@@ -118,34 +91,47 @@ public class RawDataFragment extends Fragment implements OnClickListener {
         closeReceiver();
     }
 
+    /**
+     * Piggy-backs off the application's established connection with the database and loads
+     * its contents into the activity UI.
+     */
+    private void connectToDatabase() {
+        VisualImprintsApplication vI = (VisualImprintsApplication) this.getApplication();
+        dbAdapter = vI.getDatabaseAdapter();
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         openReceiver();
     }
 
-    private void linkUiElements(View view) {
-        mAllLocationsListLayout =
-                (LinearLayout) view.findViewById(R.id.all_locations_linear_layout);
-        mLastLocationTextView = (TextView) view.findViewById(R.id.last_location_label);
-        mLastUpdatedTextView = (TextView) view.findViewById(R.id.last_updated_label);
-        mLatitudeTextView = (TextView) view.findViewById(R.id.coordinates_latitude_text);
-        mLongitudeTextView = (TextView) view.findViewById(R.id.coordinates_longitude_text);
-        mLastArrivalTimeTextView = (TextView) view.findViewById(R.id.last_arrival_time_text);
-        mDurationCounter = (Chronometer) view.findViewById(R.id.duration_counter);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_raw_data, menu);
+        return true;
+    }
+
+    private void linkUiElements() {
+        mAllLocationsListLayout = (LinearLayout) findViewById(R.id.all_locations_linear_layout);
+        mLastLocationTextView = (TextView) findViewById(R.id.last_location_label);
+        mLastUpdatedTextView = (TextView) findViewById(R.id.last_updated_label);
+        mLatitudeTextView = (TextView) findViewById(R.id.coordinates_latitude_text);
+        mLongitudeTextView = (TextView) findViewById(R.id.coordinates_longitude_text);
+        mLastArrivalTimeTextView = (TextView) findViewById(R.id.last_arrival_time_text);
+        mDurationCounter = (Chronometer) findViewById(R.id.duration_counter);
     }
 
     private void openReceiver() {
         IntentFilter mGpsLocationFilter = new IntentFilter(Constants.BROADCAST_ACTION);
 
         mGpsLocationReceiver = new GpsLocationReceiver();
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
-                mGpsLocationReceiver,
-                mGpsLocationFilter);
+        registerReceiver(mGpsLocationReceiver, mGpsLocationFilter);
     }
 
     private void closeReceiver() {
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mGpsLocationReceiver);
+        unregisterReceiver(mGpsLocationReceiver);
     }
 
     /**
@@ -164,7 +150,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
             //TODO(clidwin): if date matches today, get all entries for date and if one entry, don't show since it's the current location
             // Construct row object.
             String dateText = allEntryDates.get(index);
-            final LinearLayout row = new LinearLayout(getActivity());
+            final LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.VERTICAL);
             row.setPadding(
                     0, (int) getResources().getDimension(R.dimen.layout_padding),
@@ -182,7 +168,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
             }
 
             // Format date for display.
-            final TextView dateTextView = new TextView(getActivity());
+            final TextView dateTextView = new TextView(this);
             dateTextView.setTextSize(
                     TypedValue.COMPLEX_UNIT_PX,
                     getResources().getDimension(R.dimen.default_text_size)
@@ -192,7 +178,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
 
             // Establish interactivity.
             row.setClickable(true);
-            row.setOnClickListener(new OnClickListener() {
+            row.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // Retrieve the layout object that has been clicked.
@@ -240,7 +226,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
 
             // Add horizontal rule to separate list entries.
             if (index+1 != allEntryDates.size()) {
-                View ruler = new View(getActivity());
+                View ruler = new View(this);
                 ruler.setBackgroundColor(getResources().getColor(R.color.Divider));
                 ruler.setPadding(0, 0, 0, (int)getResources().getDimension(R.dimen.layout_padding));
                 mAllLocationsListLayout.addView(ruler,
@@ -257,7 +243,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
      * @return the constructed {@link android.widget.TableRow} object.
      */
     private TableRow makeLocationHeader() {
-        TableRow tableRow = new TableRow(getActivity());
+        TableRow tableRow = new TableRow(this);
         //TODO(clidwin): Set minimum width and height
 
         TableRow.LayoutParams lp = new TableRow.LayoutParams();
@@ -266,7 +252,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
         lp.weight = 1;
 
         // Arrival Date and Time
-        TextView arrivalTimeView = new TextView(getActivity());
+        TextView arrivalTimeView = new TextView(this);
         arrivalTimeView.setLayoutParams(lp);
         arrivalTimeView.setText(getResources().getText(R.string.arrival_time_label));
         arrivalTimeView.setTextSize(
@@ -276,7 +262,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
         tableRow.addView(arrivalTimeView);
 
         // Location
-        TextView locationLabelView = new TextView(getActivity());
+        TextView locationLabelView = new TextView(this);
         locationLabelView.setLayoutParams(lp);
         locationLabelView.setText(getResources().getText(R.string.location_label));
         locationLabelView.setTextSize(
@@ -286,7 +272,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
         tableRow.addView(locationLabelView);
 
         // Duration
-        TextView durationLabelView = new TextView(getActivity());
+        TextView durationLabelView = new TextView(this);
         durationLabelView.setLayoutParams(lp);
         durationLabelView.setText(getResources().getText(R.string.duration_label));
         durationLabelView.setTextSize(
@@ -311,7 +297,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 1.0f);
 
-        TableRow row = new TableRow(getActivity());
+        TableRow row = new TableRow(this);
         row.setId(pin.getArrivalTime().hashCode());
         row.setClickable(rowsClickable);
         row.setLayoutParams(new TableRow.LayoutParams(
@@ -320,21 +306,21 @@ public class RawDataFragment extends Fragment implements OnClickListener {
                 1.0f));
 
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-        TextView timeText = new TextView(getActivity());
+        TextView timeText = new TextView(this);
         timeText.setText(timeFormat.format(pin.getArrivalTime()));
         row.addView(timeText, cellLayoutParams);
 
-        LinearLayout gpsLayout = new LinearLayout(getActivity());
+        LinearLayout gpsLayout = new LinearLayout(this);
         gpsLayout.setOrientation(LinearLayout.VERTICAL);
-        TextView latText = new TextView(getActivity());
+        TextView latText = new TextView(this);
         latText.setText("" + pin.getLocation().getLatitude());
         gpsLayout.addView(latText);
-        TextView longText = new TextView(getActivity());
+        TextView longText = new TextView(this);
         longText.setText("" + pin.getLocation().getLongitude());
         gpsLayout.addView(longText);
         row.addView(gpsLayout, cellLayoutParams);
 
-        TextView durationText = new TextView(getActivity());
+        TextView durationText = new TextView(this);
         durationText.setText(formatDuration(pin.getDuration()));
         row.addView(durationText, cellLayoutParams);
 
@@ -412,134 +398,24 @@ public class RawDataFragment extends Fragment implements OnClickListener {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-            case R.id.refresh_rows:
-                mAllLocationsListLayout.removeAllViewsInLayout();
-                loadDatabaseContents();
-                return true;
-            /*case R.id.edit_rows:
-                rowsClickable = !rowsClickable;
-                toggleClickableRows();
-                return true;
-            case R.id.action_settings:
-                showToast("Merging selected rows.");
-                mergeLocations();
-                return true;*/
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
-    private void removeAllDatabaseContents() {
-    }
-
-    private void mergeLocations() {
-        // Confirm only adjacent rows are selected
-        // (Can't merge locations that are not temporally sequential)
-        String [] query = new String [selectedRows.size()];
-        int i = 0;
-        for (View view: selectedRows) {
-            /*int tableIndex = mAllLocationsTable.indexOfChild(view);
-            View vM1 = mAllLocationsTable.getChildAt(tableIndex - 1);
-
-            if (!selectedRows.contains(vM1)) {
-                if (tableIndex + 1 < mAllLocationsTable.getChildCount()) {
-                    View vM2 = mAllLocationsTable.getChildAt(tableIndex + 1);
-                    if (!selectedRows.contains(vM2)) {
-                        //TODO(clidwin): Debug this, since some valid merges get here.
-                        Log.d(TAG, "Adjacent row not found");
-                        showToast("Merge not successful. Select adjacent rows.");
-                        return;
-                    }
-                }
-            }*/
-            query[i] = String.valueOf(view.getId());
-            i++;
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
         }
 
-        // Get the database objects for the selected rows
-        ArrayList<GeospatialPin> pinsToMerge = new ArrayList<>();
-        int indexOfEarliestPin = -1;
-        i=0;
-        for (View view: selectedRows) {
-            //TODO(clidwin): Make one call to the database with all IDs using the query array (above)
-            GeospatialPin pin = dbAdapter.getEntryById(view.getId());
-            if (pin != null) {
-                pinsToMerge.add(pin);
-                if (indexOfEarliestPin == -1) {
-                    indexOfEarliestPin = i;
-                } else {
-                    Date earliestPinTime = pinsToMerge.get(indexOfEarliestPin).getArrivalTime();
-                    Date newPinTime = pin.getArrivalTime();
-                    if (newPinTime.before(earliestPinTime)) {
-                        indexOfEarliestPin = i;
-                    }
-                    //TODO(clidwin): Maybe delete entities here as they're "not earliest"
-                }
-                i++;
-            } else {
-                showToast("Merge not successful. Row not found.");
-                return;
-            }
-        }
-
-        GeospatialPin earliestPin = pinsToMerge.remove(indexOfEarliestPin);
-        for (GeospatialPin pin: pinsToMerge) {
-            earliestPin.setDuration(earliestPin.getDuration() + pin.getDuration());
-            //TODO(clidwin): delete all entries with one database call
-            dbAdapter.deleteEntry(pin);
-            dbAdapter.updateEntry(earliestPin);
-            for (View row: selectedRows) {
-                if (row.getId() == pin.getArrivalTime().hashCode()) {
-                    //mAllLocationsTable.removeView(row);
-                    break;
-                }
-            }
-        }
-        TableRow selectedRow = selectedRows.get(0);
-        selectedRow.removeViewAt(2);
-        TextView durationText = new TextView(getActivity());
-        durationText.setText(formatDuration(earliestPin.getDuration()));
-        selectedRow.addView(durationText);
-        showToast("Pins merged.");
-
-    }
-
-    private void toggleClickableRows() {
-        //TODO(clidwin): Fix bug causing rows to stay clickable despite toggle
-        /*for(int i = 1, j = mAllLocationsTable.getChildCount(); i < j; i++) {
-            View view = mAllLocationsTable.getChildAt(i);
-            if (view instanceof TableRow) {
-                TableRow row = (TableRow) view;
-                row.setClickable(rowsClickable);
-                row.setOnClickListener(getActivity());
-            }
-        }
-
-        if (rowsClickable) {
-            showToast("Table Rows are now editable.");
-        } else {
-            showToast("Table Rows are no longer editable.");
-        }*/
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (selectedRows.contains(v)) {
-            selectedRows.remove(v);
-            v.setBackgroundColor(Color.TRANSPARENT);
-        } else {
-            selectedRows.add((TableRow)v);
-            v.setBackgroundColor(Color.CYAN);
-        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
      * Shows a toast with the given text.
      */
     protected void showToast(String text) {
-        Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -553,31 +429,27 @@ public class RawDataFragment extends Fragment implements OnClickListener {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(!isAdded()) {
-                return;
+            String broadcastUpdate = intent.getStringExtra(Constants.BROADCAST_UPDATE);
+            if (broadcastUpdate != null) {
+                switch (broadcastUpdate) {
+                    case Constants.BROADCAST_SERVICE_START:
+                        processLocationInfo();
+                        break;
+                    case Constants.BROADCAST_NEW_LOCATION:
+                        if (mCurrentPin != null) {
+                            //addLocationToHistoryTable(mCurrentPin, 1);
+                        }
+                        mCurrentPin = dbAdapter.getMostRecentEntry();
+                        processLocationInfo();
+                        break;
+                    case Constants.BROADCAST_UPDATED_LOCATION:
+                        mCurrentPin.setDuration(mDurationCounter.getBase());
+                        processLocationInfo();
+                        break;
+                    default:
+                        break;
+                }
             }
-
-           String broadcastUpdate = intent.getStringExtra(Constants.BROADCAST_UPDATE);
-           if (broadcastUpdate != null) {
-               switch (broadcastUpdate) {
-                   case Constants.BROADCAST_SERVICE_START:
-                       processLocationInfo();
-                       break;
-                   case Constants.BROADCAST_NEW_LOCATION:
-                       if (mCurrentPin != null) {
-                           //addLocationToHistoryTable(mCurrentPin, 1);
-                       }
-                       mCurrentPin = dbAdapter.getMostRecentEntry();
-                       processLocationInfo();
-                       break;
-                   case Constants.BROADCAST_UPDATED_LOCATION:
-                       mCurrentPin.setDuration(mDurationCounter.getBase());
-                       processLocationInfo();
-                       break;
-                   default:
-                       break;
-               }
-           }
         }
 
         /**
@@ -591,7 +463,7 @@ public class RawDataFragment extends Fragment implements OnClickListener {
                     " " + timeFormat.format(System.currentTimeMillis()) + " on " +
                     dateFormat.format(System.currentTimeMillis()));
 
-            updateMostRecentLocation();
+            //TODO(clidwin): uncomment updateMostRecentLocation();
         }
     }
 }

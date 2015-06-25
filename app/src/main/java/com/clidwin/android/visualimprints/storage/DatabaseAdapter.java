@@ -164,6 +164,15 @@ public class DatabaseAdapter {
         String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_DATE + " DESC, " +
                 DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
 
+        return getAllEntriesFromDates(sortOrder, dates);
+    }
+
+    /**
+     * @return all entries in the database with the given date as a list of
+     *      {@link com.clidwin.android.visualimprints.location.GeospatialPin} objects
+     */
+    public ArrayList<GeospatialPin> getAllEntriesFromDates(String sortOrder, String [] dates) {
+
         // Construct the query template.
         String whereClause = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_DATE + " IN (?";
         for (int i=1; i <dates.length; i++) {
@@ -208,7 +217,9 @@ public class DatabaseAdapter {
         String [] dates = {DateFormatter.format(yesterdayDate), DateFormatter.format(todayDate)};
         ArrayList<GeospatialPin> last24HourPins = new ArrayList<>();
 
-        for (GeospatialPin pin: getAllEntriesFromDates(dates)) {
+        String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
+
+        for (GeospatialPin pin: getAllEntriesFromDates(sortOrder, dates)) {
             if (pin.getArrivalTime().after(yesterdayDate)) {
                 last24HourPins.add(pin);
             }
@@ -282,9 +293,11 @@ public class DatabaseAdapter {
             GeospatialPin pin = new GeospatialPin(location, arrivalDateTime, duration);
             //TODO(clidwin): Create the address object and then uncomment the line below
             //pin.setAddress(pinAddress);
+            //c.close();
             return pin;
         } catch (ParseException e) {
             e.printStackTrace();
+            //c.close();
             return null;
         }
     }

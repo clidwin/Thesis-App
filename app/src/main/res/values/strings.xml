@@ -39,4 +39,10 @@
     <string name="all_locations_subtitle_text">Click on a date to views location data</string>
     <string name="title_activity_maps">Map</string>
     <string name="refresh_rows">Refresh Rows</string>
+    <string name="icon_tray_save_view_desc">Saves the current view as a screenshot</string>
+    <string name="icon_tray_raw_data_desc">Switches to viewing the raw data</string>
+    <string name="icon_tray_modify_params_desc">Modify the parameters for the visualization</string>
+    <string name="title_activity_raw_data">RawDataActivity</string>
+
+    <string name="hello_world">Hello world!</string>
 </resources>

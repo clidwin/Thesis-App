@@ -1,9 +1,0 @@
-<resources>
-    <style name="Theme.Base" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:windowActionBar">false</item>
-        <!-- customize the color palette-->
-        <item name="colorPrimary">@color/Primary</item>
-        <item name="colorPrimaryDark">@color/PrimaryDark</item>
-        <item name="colorAccent">@color/Accent</item>
-    </style>
-</resources>
