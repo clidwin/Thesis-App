@@ -45,4 +45,9 @@
     <string name="title_activity_raw_data">RawDataActivity</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="datetime_dialog_title">Custom DateTime Dialog</string>
+    <string name="dialog_daterange_make_change">Modify</string>
+    <string name="menu_dialog_modify">Date Range</string>
+    <string name="dialog_daterange_to_label">To</string>
+    <string name="dialog_daterange_from_label">From</string>
 </resources>

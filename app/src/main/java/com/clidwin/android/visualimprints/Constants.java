@@ -60,5 +60,8 @@ public final class Constants {
      */
     public static final String DATABASE_TIME_FORMAT = "HH:mm:ss.SSSZ EEE";
     public static final String BROADCAST_SERVICE_START = "GPS service started";
+
+    public static final String DISPLAY_DATE_FORMAT = "EEE, MMMM dd, yyyy";
+    public static final String DISPLAY_TIME_FORMAT = "hh:mm a";
 }
 

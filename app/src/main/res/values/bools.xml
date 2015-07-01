@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Default boolean values -->
+<resources>
+    <bool name="large_layout">false</bool>
+    <bool name="all_caps">true</bool>
+</resources>

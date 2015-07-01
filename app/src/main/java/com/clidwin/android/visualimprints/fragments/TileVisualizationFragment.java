@@ -1,17 +1,13 @@
 package com.clidwin.android.visualimprints.fragments;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.activities.MainActivity;
 
 /**
  * View to display a test fragment.

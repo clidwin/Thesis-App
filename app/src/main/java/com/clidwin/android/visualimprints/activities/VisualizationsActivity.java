@@ -1,58 +1,47 @@
-/**
- * Copyright 2014 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * Original source:
- *      http://www.android4devs.com/2015/01/how-to-make-material-design-sliding-tabs.html
- */
-
 package com.clidwin.android.visualimprints.activities;
 
-import android.app.ActivityManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.VisualImprintsApplication;
+import com.clidwin.android.visualimprints.fragments.DateTimeDialogFragment;
 import com.clidwin.android.visualimprints.layout.ViewPagerAdapter;
-import com.clidwin.android.visualimprints.services.GpsLocationService;
-import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
+import com.clidwin.android.visualimprints.ui.DateSelector;
+
+import java.util.Calendar;
 
 /**
  * Controlling activity for the application. Constructs the visual interface and interactivity
  * based on Fragment points of view (to utilize material design).
  *
  * @author Christina Lidwin
- * @version May 13, 2015
+ * @version June 30, 2015
  */
-public class MainActivity extends AppCompatActivity {
+public class VisualizationsActivity extends AppActivity {
+    private static final String TAG = "main-activity-visuals";
 
     // Declaring Your View and Variables
     ViewPager pager;
     ViewPagerAdapter viewPageAdapter;
     CharSequence titles[]={"Visualization", "Raw Data"};
-    private DatabaseAdapter dbAdapter;
+
+    private boolean mIsLargeLayout;
+
+    private Calendar oldestTimestamp;
+    private Calendar newestTimestamp;
+
+    private OnModifyListener mOnModifyListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,27 +49,37 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         viewPageAdapter =  new ViewPagerAdapter(getSupportFragmentManager(), titles);
+        mIsLargeLayout = getResources().getBoolean(R.bool.large_layout);
 
-        // Assigning ViewPager View and setting the viewPageAdapter
+        // Assigning default Calendars
+        //TODO(clidwin): Use the savedInstanceState to store these for persistence
+        oldestTimestamp = Calendar.getInstance();
+        oldestTimestamp.add(Calendar.DAY_OF_YEAR, -1);
+        newestTimestamp = Calendar.getInstance();
+        mOnModifyListener = new OnModifyListener();
+
+        // Assigning ViewPager View and setting the viewPageAdapter to show multiple visualizations
         pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(viewPageAdapter);
         pager.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-
 
         // Configuring autohide options on the menus
         /*decorView = getWindow().getDecorView();
         int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
         decorView.setSystemUiVisibility(uiOptions);*/
 
-        // Assiging the Sliding Tab Layout View
+        // Customizing UI elements
         setupIconTray();
 
-        getSupportActionBar().hide();
-
-        connectToDatabase();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
     }
 
+    /**
+     * Creates the icon menu items at the bottom of visualizations.
+     */
     private void setupIconTray() {
         //TODO(clidwin): Replace all listeners with feature-ready content.
 
@@ -100,15 +99,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         ImageButton viewParamsButton = (ImageButton) findViewById(R.id.icon_tray_view_parameters);
         viewParamsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                buildAndShowDialog();
+                showParametersDialog();
             }
         });
-
     }
 
     private void openRawData() {
@@ -117,6 +114,9 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * Creates a dialog that alerts the user a feature is unavailable.
+     */
     private void buildAndShowDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Feature Unavailable")
@@ -128,20 +128,6 @@ public class MainActivity extends AppCompatActivity {
                });
         builder.create().show();
     }
-
-    /**
-     * Piggy-backs off the application's established connection with the database and loads
-     * its contents into the activity UI.
-     */
-    private void connectToDatabase() {
-        VisualImprintsApplication vI = (VisualImprintsApplication) this.getApplication();
-        dbAdapter = vI.getDatabaseAdapter();
-    }
-
-    /**
-     * @return the {@link DatabaseAdapter} being used by this activity
-     */
-    public DatabaseAdapter getDatabaseAdapter() { return dbAdapter; }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -165,15 +151,47 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private boolean isConnected() {
-        String gpsServiceName = GpsLocationService.class.getName();
+    /**
+     * Builds and creates the dialog for changing visualization parameters.
+     */
+    public void showParametersDialog() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        DateTimeDialogFragment newFragment = new DateTimeDialogFragment();
 
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo serviceInfo : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (gpsServiceName.equals(serviceInfo.service.getClassName())) {
-                return true;
-            }
+        // Show fullscreen dialog on small devices (phones), otherwise a popup dialog (tablets)
+        if (mIsLargeLayout) {
+            newFragment.show(fragmentManager, "dialog_datetime");
+        } else {
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            transaction.add(android.R.id.content, newFragment)
+                       .addToBackStack(null).commit();
         }
-        return false;
+
+        newFragment.setOnModifyListener(mOnModifyListener);
+    }
+
+    public Calendar getOldestTimestamp() {
+        return oldestTimestamp;
+    }
+
+    public Calendar getNewestTimestamp() { return newestTimestamp; }
+
+    /**
+     * Class used to receive information from other classes and components.
+     */
+    public class OnModifyListener {
+        /**
+         * Updates one of the two timestamps' date based on a {@link DateSelector}'s new value.
+         * @param view The selector calling this method.
+         * @param oldestTimestamp The new timestamp year.
+         * @param newestTimestamp The new timestamp month.
+         */
+        public void onModifyParameters(View view, Calendar oldestTimestamp, Calendar newestTimestamp) {
+            Log.e(TAG, "beginning timestamp updates");
+            VisualizationsActivity.this.oldestTimestamp = oldestTimestamp;
+            VisualizationsActivity.this.newestTimestamp = newestTimestamp;
+            Log.e(TAG, "timestamps updated");
+        }
     }
 }

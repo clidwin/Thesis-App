@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  * @version June 25, 2015
  */
 
-public class RawDataActivity extends AppCompatActivity {
+public class RawDataActivity extends AppActivity {
 
     protected static final String TAG = "visual-imprints-rawData";
     // Keys for storing activity state in the Bundle.
@@ -62,7 +62,6 @@ public class RawDataActivity extends AppCompatActivity {
     protected TextView mLongitudeTextView;
     protected TextView mLastLocationTextView;
     protected Chronometer mDurationCounter;
-    private DatabaseAdapter dbAdapter;
 
     private ArrayList<TableRow> selectedRows;
     private boolean rowsClickable = false;
@@ -80,7 +79,6 @@ public class RawDataActivity extends AppCompatActivity {
         // Update values using data stored in the Bundle.
         //updateValuesFromBundle(savedInstanceState);
 
-        connectToDatabase();
         openReceiver();
         loadDatabaseContents();
     }
@@ -91,19 +89,16 @@ public class RawDataActivity extends AppCompatActivity {
         closeReceiver();
     }
 
-    /**
-     * Piggy-backs off the application's established connection with the database and loads
-     * its contents into the activity UI.
-     */
-    private void connectToDatabase() {
-        VisualImprintsApplication vI = (VisualImprintsApplication) this.getApplication();
-        dbAdapter = vI.getDatabaseAdapter();
-    }
-
     @Override
     public void onResume() {
         super.onResume();
         openReceiver();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        closeReceiver();
     }
 
     @Override
@@ -131,6 +126,7 @@ public class RawDataActivity extends AppCompatActivity {
     }
 
     private void closeReceiver() {
+        //TODO(clidwin): check if register is received
         unregisterReceiver(mGpsLocationReceiver);
     }
 
@@ -463,7 +459,7 @@ public class RawDataActivity extends AppCompatActivity {
                     " " + timeFormat.format(System.currentTimeMillis()) + " on " +
                     dateFormat.format(System.currentTimeMillis()));
 
-            //TODO(clidwin): uncomment updateMostRecentLocation();
+            updateMostRecentLocation();
         }
     }
 }

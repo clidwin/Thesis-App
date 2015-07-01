@@ -76,7 +76,7 @@ limitations under the License.
         </receiver>
 
         <activity
-            android:name=".activities.MainActivity"
+            android:name=".activities.VisualizationsActivity"
             android:label="@string/app_name"
             android:uiOptions="splitActionBarWhenNarrow" >
             <meta-data
@@ -112,10 +112,10 @@ limitations under the License.
         <activity
             android:name=".activities.RawDataActivity"
             android:label="@string/title_activity_raw_data"
-            android:parentActivityName=".activities.MainActivity" >
+            android:parentActivityName=".activities.VisualizationsActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.clidwin.android.visualimprints.activities.MainActivity" />
+                android:value=".activities.VisualizationsActivity" />
         </activity>
     </application>
 

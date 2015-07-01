@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="Accent">#8BC34A</color>
+    <color name="DisabledHintBlack">#B8B8B8</color>
+    <color name="DividerBlack">#DADADA</color>
     <color name="Divider">#B6B6B6</color>
     <color name="Primary">#009688</color>
     <color name="PrimaryDark">#00796B</color>

@@ -14,7 +14,7 @@ import android.util.Log;
 
 import com.clidwin.android.visualimprints.Constants;
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.activities.MainActivity;
+import com.clidwin.android.visualimprints.activities.VisualizationsActivity;
 import com.clidwin.android.visualimprints.location.GeospatialPin;
 import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 import com.google.android.gms.common.ConnectionResult;
@@ -80,7 +80,7 @@ public class GpsLocationService extends Service
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         //subscribeToLocationUpdates();
-        createNotification("Location service is has been created.");
+        createNotification("Location service is running.");
     }
 
     /**
@@ -88,7 +88,7 @@ public class GpsLocationService extends Service
      * and less likely to be killed by another background task.
      */
     private void createNotification(String contentText) {
-        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent notificationIntent = new Intent(getApplicationContext(), VisualizationsActivity.class);
         notificationIntent.setFlags(
                 Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent intent = PendingIntent.getActivity(getApplicationContext(), 0,
@@ -177,7 +177,6 @@ public class GpsLocationService extends Service
 
         // Request last location to get an immediate update, then request continuous updates.
         LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        //TODO(clidwin) Use requestLocationsUpdate with PendingIntent instead of LocationListener
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, mLocationListener);
 
@@ -241,7 +240,7 @@ public class GpsLocationService extends Service
                 Location recentLocation = mostRecentPin.getLocation();
 
                 // Compare latitudes and longitudes to see if they're approximately the same location
-                int accuracy = 4;
+                int accuracy = 5;
                 if (areSameLocation(newLocation, recentLocation, accuracy) ||
                         distanceBetweenLocations(newLocation, recentLocation)
                                 < Constants.UPDATE_DISTANCE) {

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/toolbar_dialog_datetime"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        layout="@layout/toolbar_dialog_datetime" />
+
+    <LinearLayout
+        android:background="@color/background_floating_material_light"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:orientation="vertical"
+        android:padding="24dp" >
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/dialog_daterange_from_label"
+                android:id="@+id/fromLabel" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent" >
+                <com.clidwin.android.visualimprints.ui.DateSelector
+                    android:id="@+id/fromDate"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.7"
+                    android:layout_width="0dp"
+                    android:paddingEnd="@dimen/action_padding"
+                    android:paddingStart="0dp"/>
+
+                <com.clidwin.android.visualimprints.ui.TimeSelector
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.3"
+                    android:id="@+id/fromTime" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:background="@color/background_floating_material_light"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:orientation="vertical"
+        android:padding="24dp" >
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/dialog_daterange_to_label"
+                android:id="@+id/toLabel" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" >
+
+                <com.clidwin.android.visualimprints.ui.DateSelector
+                    android:id="@+id/toDate"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.7"
+                    android:layout_width="0dp"
+                    android:paddingEnd="@dimen/action_padding"
+                    android:paddingStart="0dp"/>
+
+                <com.clidwin.android.visualimprints.ui.TimeSelector
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.3"
+                    android:id="@+id/toTime" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,6 +1,5 @@
 package com.clidwin.android.visualimprints.visualizations;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -18,7 +17,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.activities.MainActivity;
+import com.clidwin.android.visualimprints.activities.VisualizationsActivity;
 import com.clidwin.android.visualimprints.location.GeospatialPin;
 import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 import com.clidwin.android.visualimprints.ui.PinRect;
@@ -32,7 +31,7 @@ import java.util.GregorianCalendar;
  * @author Christina Lidwin (clidwin)
  * @version June 01, 2015
  */
-public class TestVisualization extends View {
+public class TileVisualization extends View {
     private static final String TAG = "visualimprints-test-vis";
 
     //private final boolean mShowText;
@@ -50,12 +49,12 @@ public class TestVisualization extends View {
 
     GregorianCalendar arrivalTime = new GregorianCalendar();
 
-    public TestVisualization(Context context, AttributeSet attributes) {
+    public TileVisualization(Context context, AttributeSet attributes) {
         super(context, attributes);
 
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attributes,
-                R.styleable.TestVisualization,
+                R.styleable.TileVisualization,
                 0, 0);
 
         try {
@@ -69,7 +68,7 @@ public class TestVisualization extends View {
 
         popUp = new PopupWindow();
 
-        MainActivity activity = (MainActivity) getContext();
+        VisualizationsActivity activity = (VisualizationsActivity) getContext();
         if (activity != null) {
             DatabaseAdapter dbAdapter = activity.getDatabaseAdapter();
             lastLocations = dbAdapter.getLast24HoursOfEntries();
