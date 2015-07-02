@@ -1,5 +1,6 @@
 package com.clidwin.android.visualimprints.layout;
 
+import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -17,24 +18,35 @@ import com.clidwin.android.visualimprints.fragments.TileVisualizationFragment;
  */
 public class ViewPagerAdapter extends FragmentStatePagerAdapter {
 
+    private final Context context;
     CharSequence titles[];
 
-    public ViewPagerAdapter(FragmentManager fm,CharSequence mTitles[]) {
+    public ViewPagerAdapter(Context context, FragmentManager fm, CharSequence mTitles[]) {
         super(fm);
 
+        this.context = context;
         this.titles = mTitles;
     }
 
     //This method return the fragment for the every position in the View Pager
     @Override
     public Fragment getItem(int position) {
-        if(position == 0) {
-            TileVisualizationFragment visualizationTab = new TileVisualizationFragment();
-            return visualizationTab;
-        } else {
-            MapViewFragment mapViewTab = new MapViewFragment();
-            return mapViewTab;
+        Fragment fragment;
+        switch (position) {
+            case 0:
+                fragment = TileVisualizationFragment.newInstance(context);
+                break;
+            case 1:
+                fragment = new MapViewFragment();
+                break;
+            default:
+                fragment = new MapViewFragment();
         }
+        return fragment;
+    }
+
+    public int getItemPosition(Object object) {
+        return POSITION_NONE;
     }
 
     @Override

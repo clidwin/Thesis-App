@@ -86,7 +86,6 @@ public class DateTimeDialogFragment extends DialogFragment {
                 Log.e(TAG, "timestamps modify clicked");
                 if(mOnModifytListener != null) {
                     mOnModifytListener.onModifyParameters(
-                            DateTimeDialogFragment.this.getView(),
                             oldestTimestamp,
                             newestTimestamp
                     );

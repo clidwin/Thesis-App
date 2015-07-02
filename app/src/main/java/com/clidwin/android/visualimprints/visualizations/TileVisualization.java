@@ -71,13 +71,14 @@ public class TileVisualization extends View {
         VisualizationsActivity activity = (VisualizationsActivity) getContext();
         if (activity != null) {
             DatabaseAdapter dbAdapter = activity.getDatabaseAdapter();
-            lastLocations = dbAdapter.getLast24HoursOfEntries();
+            lastLocations = dbAdapter.getEntriesInDateRange(
+                    activity.getOldestTimestamp(), activity.getNewestTimestamp());
             Log.e(TAG, "Number of locations: " + lastLocations.size());
             for(GeospatialPin pin: lastLocations) {
+                //TODO(clidwin): Switch this to a debug log
                 Log.e(TAG, pin.getArrivalTime().toString());
             }
         } else {
-            //TODO(clidwin): Display a message saying the database wasn't found.
             Log.e(TAG, "Database disconnected");
         }
     }

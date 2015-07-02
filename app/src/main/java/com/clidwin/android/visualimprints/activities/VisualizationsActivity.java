@@ -2,6 +2,7 @@ package com.clidwin.android.visualimprints.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -11,7 +12,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.clidwin.android.visualimprints.R;
@@ -30,6 +30,8 @@ import java.util.Calendar;
  */
 public class VisualizationsActivity extends AppActivity {
     private static final String TAG = "main-activity-visuals";
+    private static final String SAVED_STATE_OLDEST_TIMESTAMP = "oldestTimestamp";
+    private static final String SAVED_STATE_NEWEST_TIMESTAMP = "newestTimestamp";
 
     // Declaring Your View and Variables
     ViewPager pager;
@@ -48,14 +50,9 @@ public class VisualizationsActivity extends AppActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        viewPageAdapter =  new ViewPagerAdapter(getSupportFragmentManager(), titles);
+        viewPageAdapter =  new ViewPagerAdapter(this, getSupportFragmentManager(), titles);
         mIsLargeLayout = getResources().getBoolean(R.bool.large_layout);
 
-        // Assigning default Calendars
-        //TODO(clidwin): Use the savedInstanceState to store these for persistence
-        oldestTimestamp = Calendar.getInstance();
-        oldestTimestamp.add(Calendar.DAY_OF_YEAR, -1);
-        newestTimestamp = Calendar.getInstance();
         mOnModifyListener = new OnModifyListener();
 
         // Assigning ViewPager View and setting the viewPageAdapter to show multiple visualizations
@@ -71,10 +68,65 @@ public class VisualizationsActivity extends AppActivity {
 
         // Customizing UI elements
         setupIconTray();
-
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
+
+        // Set initial timestamps for visualizations.
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+
+        oldestTimestamp = Calendar.getInstance();
+        oldestTimestamp.add(Calendar.DAY_OF_YEAR, -1);
+        newestTimestamp = Calendar.getInstance();
+        loadSharedPreferences();
+    }
+
+    private void loadSharedPreferences() {
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+
+        long oldestTime = preferences.getLong(SAVED_STATE_OLDEST_TIMESTAMP, 0);
+        if (oldestTime != 0) {
+            oldestTimestamp.setTimeInMillis(oldestTime);
+        }
+
+        long newestTime = preferences.getLong(SAVED_STATE_NEWEST_TIMESTAMP, 0);
+        if (newestTime != 0) {
+            newestTimestamp.setTimeInMillis(newestTime);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        SharedPreferences.Editor editor = getPreferences(MODE_PRIVATE).edit();
+        editor.putLong(SAVED_STATE_OLDEST_TIMESTAMP, oldestTimestamp.getTime().getTime());
+        editor.putLong(SAVED_STATE_NEWEST_TIMESTAMP, newestTimestamp.getTime().getTime());
+        editor.commit();
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        // Always call the superclass so it can restore the view hierarchy
+        super.onRestoreInstanceState(savedInstanceState);
+
+        // Restore state members from saved instance
+        oldestTimestamp.setTimeInMillis(savedInstanceState.getLong(SAVED_STATE_OLDEST_TIMESTAMP));
+        newestTimestamp.setTimeInMillis(savedInstanceState.getLong(SAVED_STATE_NEWEST_TIMESTAMP));
+    }
+
+    /**
+     * Saves information about the state of the activity before closing. For details, see:
+     *      https://developer.android.com/training/basics/activity-lifecycle/recreating.html
+     * @param outState A Bundle of information about the activity in its current state.
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putLong(SAVED_STATE_OLDEST_TIMESTAMP, oldestTimestamp.getTime().getTime());
+        outState.putLong(SAVED_STATE_NEWEST_TIMESTAMP, newestTimestamp.getTime().getTime());
+        Log.e(TAG, "Saved timestamps for activity reload/resume.");
+
+        super.onSaveInstanceState(outState);
     }
 
     /**
@@ -141,7 +193,7 @@ public class VisualizationsActivity extends AppActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        //int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
         /*if (id == R.id.action_settings) {
@@ -183,15 +235,19 @@ public class VisualizationsActivity extends AppActivity {
     public class OnModifyListener {
         /**
          * Updates one of the two timestamps' date based on a {@link DateSelector}'s new value.
-         * @param view The selector calling this method.
          * @param oldestTimestamp The new timestamp year.
          * @param newestTimestamp The new timestamp month.
          */
-        public void onModifyParameters(View view, Calendar oldestTimestamp, Calendar newestTimestamp) {
-            Log.e(TAG, "beginning timestamp updates");
-            VisualizationsActivity.this.oldestTimestamp = oldestTimestamp;
-            VisualizationsActivity.this.newestTimestamp = newestTimestamp;
-            Log.e(TAG, "timestamps updated");
+        public void onModifyParameters(Calendar oldestTimestamp, Calendar newestTimestamp) {
+            VisualizationsActivity currentActivity = VisualizationsActivity.this;
+            currentActivity.oldestTimestamp = oldestTimestamp;
+            currentActivity.newestTimestamp = newestTimestamp;
+            currentActivity.refreshVisualization();
         }
+    }
+
+    private void refreshVisualization() {
+        //Fragment currentFragment = viewPageAdapter.getItem(pager.getCurrentItem());
+        viewPageAdapter.notifyDataSetChanged();
     }
 }

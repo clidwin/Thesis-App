@@ -85,8 +85,8 @@ public class RawDataActivity extends AppActivity {
 
     @Override
     public void onPause() {
-        super.onPause();
         closeReceiver();
+        super.onPause();
     }
 
     @Override
@@ -97,8 +97,8 @@ public class RawDataActivity extends AppActivity {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         closeReceiver();
+        super.onDestroy();
     }
 
     @Override
@@ -118,6 +118,9 @@ public class RawDataActivity extends AppActivity {
         mDurationCounter = (Chronometer) findViewById(R.id.duration_counter);
     }
 
+    /**
+     * Registers a receiver that listens for new and updated locations.
+     */
     private void openReceiver() {
         IntentFilter mGpsLocationFilter = new IntentFilter(Constants.BROADCAST_ACTION);
 
@@ -125,9 +128,15 @@ public class RawDataActivity extends AppActivity {
         registerReceiver(mGpsLocationReceiver, mGpsLocationFilter);
     }
 
+    /**
+     * Unregisters the receiver listening for new and updated locations.
+     */
     private void closeReceiver() {
-        //TODO(clidwin): check if register is received
-        unregisterReceiver(mGpsLocationReceiver);
+        try {
+            unregisterReceiver(mGpsLocationReceiver);
+        } catch (IllegalArgumentException exception) {
+            Log.e(TAG, exception.getMessage());
+        }
     }
 
     /**

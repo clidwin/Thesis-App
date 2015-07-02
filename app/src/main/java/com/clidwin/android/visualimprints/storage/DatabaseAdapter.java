@@ -207,20 +207,21 @@ public class DatabaseAdapter {
      * @return all {@link com.clidwin.android.visualimprints.location.GeospatialPin}
      *      within the date and time range.
      */
-    public ArrayList<GeospatialPin> getLast24HoursOfEntries() {
-        Calendar calendar = Calendar.getInstance();
-        Date todayDate = calendar.getTime();
-        calendar.add(Calendar.DATE, -1);
-        Date yesterdayDate = calendar.getTime();
+    public ArrayList<GeospatialPin> getEntriesInDateRange(Calendar olderDay, Calendar newerDay) {
 
         //TODO(clidwin): implement this method by timestamp rather than date.
-        String [] dates = {DateFormatter.format(yesterdayDate), DateFormatter.format(todayDate)};
+        String [] dates = {
+                DateFormatter.format(olderDay.getTime()),
+                DateFormatter.format(newerDay.getTime())
+        };
         ArrayList<GeospatialPin> last24HourPins = new ArrayList<>();
 
         String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
 
+        //TODO(clidwin): Update to get all entries between dates instead of just the bookmark dates
         for (GeospatialPin pin: getAllEntriesFromDates(sortOrder, dates)) {
-            if (pin.getArrivalTime().after(yesterdayDate)) {
+            if (pin.getArrivalTime().after(olderDay.getTime()) &&
+                    pin.getArrivalTime().before(newerDay.getTime())) {
                 last24HourPins.add(pin);
             }
         }

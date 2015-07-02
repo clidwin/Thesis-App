@@ -1,5 +1,6 @@
 package com.clidwin.android.visualimprints.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -23,4 +24,15 @@ public class TileVisualizationFragment extends Fragment {
         View view =inflater.inflate(R.layout.fragment_visualization,container,false);
         return view;
     }
+
+    public static TileVisualizationFragment newInstance(Context context) {
+        TileVisualizationFragment newFragment = new TileVisualizationFragment();
+
+        Bundle args = new Bundle();
+        args.putString("tag", context.getString(R.string.tag_fragment_tile_visualization));
+        newFragment.setArguments(args);
+
+        return newFragment;
+    }
+
 }

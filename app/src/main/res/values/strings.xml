@@ -50,4 +50,5 @@
     <string name="menu_dialog_modify">Date Range</string>
     <string name="dialog_daterange_to_label">To</string>
     <string name="dialog_daterange_from_label">From</string>
+    <string name="tag_fragment_tile_visualization">fragment_tile_visualization</string>
 </resources>
