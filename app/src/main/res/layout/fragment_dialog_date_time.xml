@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/background_floating_material_light"
+    android:clickable="true"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical">
@@ -12,83 +14,165 @@
         layout="@layout/toolbar_dialog_datetime" />
 
     <LinearLayout
-        android:background="@color/background_floating_material_light"
         android:layout_height="wrap_content"
         android:layout_width="fill_parent"
         android:orientation="vertical"
         android:padding="24dp" >
 
         <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
             android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/dialog_daterange_from_label"
-                android:id="@+id/fromLabel" />
+            android:paddingBottom="@dimen/space_between_content_areas">
 
             <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="match_parent" >
-                <com.clidwin.android.visualimprints.ui.DateSelector
-                    android:id="@+id/fromDate"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.7"
-                    android:layout_width="0dp"
-                    android:paddingEnd="@dimen/action_padding"
-                    android:paddingStart="0dp"/>
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-                <com.clidwin.android.visualimprints.ui.TimeSelector
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_width="0dp"
-                    android:layout_weight="0.3"
-                    android:id="@+id/fromTime" />
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="@string/dialog_daterange_from_label"
+                    android:id="@+id/fromLabel" />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="match_parent" >
+                    <com.clidwin.android.visualimprints.ui.DateSelector
+                        android:id="@+id/fromDate"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.7"
+                        android:layout_width="0dp"
+                        android:paddingEnd="@dimen/space_between_content_areas"
+                        android:paddingStart="0dp"/>
+
+                    <com.clidwin.android.visualimprints.ui.TimeSelector
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="0.3"
+                        android:id="@+id/fromTime" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/space_between_content_areas">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="@string/dialog_daterange_to_label"
+                    android:id="@+id/toLabel" />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" >
+
+                    <com.clidwin.android.visualimprints.ui.DateSelector
+                        android:id="@+id/toDate"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.7"
+                        android:layout_width="0dp"
+                        android:paddingEnd="@dimen/space_between_content_areas"
+                        android:paddingStart="0dp"/>
+
+                    <com.clidwin.android.visualimprints.ui.TimeSelector
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="0.3"
+                        android:id="@+id/toTime" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
-        android:background="@color/background_floating_material_light"
         android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:orientation="vertical"
-        android:padding="24dp" >
+        android:paddingBottom="24dp"
+        android:paddingEnd="24dp"
+        android:paddingStart="24dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="@string/dialog_daterange_update_text_label"
+            android:id="@+id/updateLabel" />
 
         <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:orientation="horizontal"
+            android:paddingBottom="@dimen/space_between_content_areas"
+            android:paddingTop="@dimen/space_between_content_areas">
+            <android.support.v7.widget.SwitchCompat
+                android:button="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/daterange_standard_switch_currentime" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/dialog_daterange_to_label"
-                android:id="@+id/toLabel" />
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content" >
-
-                <com.clidwin.android.visualimprints.ui.DateSelector
-                    android:id="@+id/toDate"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.7"
-                    android:layout_width="0dp"
-                    android:paddingEnd="@dimen/action_padding"
-                    android:paddingStart="0dp"/>
-
-                <com.clidwin.android.visualimprints.ui.TimeSelector
-                    android:layout_height="wrap_content"
-                    android:layout_width="0dp"
-                    android:layout_weight="0.3"
-                    android:id="@+id/toTime" />
-            </LinearLayout>
+                android:text="@string/dialog_daterange_switch_label"
+                android:textColor="@color/TextPrimary"/>
         </LinearLayout>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="@string/dialog_daterange_interval_text_label"
+            android:id="@+id/standardRangeLabel" />
+
+        <!-- TODO(clidwin): use two radiogroups to have two columns !-->
+        <RadioGroup
+            android:id="@+id/daterange_standard_radiogroup"
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/space_between_content_areas"
+            android:paddingTop="@dimen/space_between_content_areas">
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dialog_daterange_radiobutton_day"
+                android:id="@+id/daterange_standard_radiobutton_day" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dialog_daterange_radiobutton_week"
+                android:id="@+id/daterange_standard_radiobutton_week" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dialog_daterange_radiobutton_month"
+                android:id="@+id/daterange_standard_radiobutton_month" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dialog_daterange_radiobutton_custom"
+                android:id="@+id/daterange_standard_radiobutton_custom" />
+        </RadioGroup>
     </LinearLayout>
 </LinearLayout>

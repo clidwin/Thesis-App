@@ -26,12 +26,14 @@ import java.util.Calendar;
  * based on Fragment points of view (to utilize material design).
  *
  * @author Christina Lidwin
- * @version June 30, 2015
+ * @version July 7, 2015
  */
 public class VisualizationsActivity extends AppActivity {
     private static final String TAG = "main-activity-visuals";
     private static final String SAVED_STATE_OLDEST_TIMESTAMP = "oldestTimestamp";
     private static final String SAVED_STATE_NEWEST_TIMESTAMP = "newestTimestamp";
+    private static final String SAVED_STATE_TIME_RANGE = "timeRange";
+    private static final String SAVED_STATE_LIVE_UPDATE = "liveUpdate";
 
     // Declaring Your View and Variables
     ViewPager pager;
@@ -42,6 +44,8 @@ public class VisualizationsActivity extends AppActivity {
 
     private Calendar oldestTimestamp;
     private Calendar newestTimestamp;
+    private TimeInterval mTimeInterval;
+    private boolean mShouldLiveUpdate;
 
     private OnModifyListener mOnModifyListener;
 
@@ -73,26 +77,34 @@ public class VisualizationsActivity extends AppActivity {
         }
 
         // Set initial timestamps for visualizations.
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-
         oldestTimestamp = Calendar.getInstance();
         oldestTimestamp.add(Calendar.DAY_OF_YEAR, -1);
         newestTimestamp = Calendar.getInstance();
+        mTimeInterval = TimeInterval.DAY;
+        mShouldLiveUpdate = true;
+
         loadSharedPreferences();
     }
 
     private void loadSharedPreferences() {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
 
-        long oldestTime = preferences.getLong(SAVED_STATE_OLDEST_TIMESTAMP, 0);
-        if (oldestTime != 0) {
+        long oldestTime = preferences.getLong(SAVED_STATE_OLDEST_TIMESTAMP, -1);
+        if (oldestTime != -1) {
             oldestTimestamp.setTimeInMillis(oldestTime);
         }
 
-        long newestTime = preferences.getLong(SAVED_STATE_NEWEST_TIMESTAMP, 0);
-        if (newestTime != 0) {
+        long newestTime = preferences.getLong(SAVED_STATE_NEWEST_TIMESTAMP, -1);
+        if (newestTime != -1) {
             newestTimestamp.setTimeInMillis(newestTime);
         }
+
+        int timeRange = preferences.getInt(SAVED_STATE_TIME_RANGE, -1);
+        if(timeRange != -1) {
+            mTimeInterval = TimeInterval.getValue(timeRange);
+        }
+
+        mShouldLiveUpdate = preferences.getBoolean(SAVED_STATE_LIVE_UPDATE, true);
     }
 
     @Override
@@ -102,6 +114,8 @@ public class VisualizationsActivity extends AppActivity {
         SharedPreferences.Editor editor = getPreferences(MODE_PRIVATE).edit();
         editor.putLong(SAVED_STATE_OLDEST_TIMESTAMP, oldestTimestamp.getTime().getTime());
         editor.putLong(SAVED_STATE_NEWEST_TIMESTAMP, newestTimestamp.getTime().getTime());
+        editor.putInt(SAVED_STATE_TIME_RANGE, mTimeInterval.value);
+        editor.putBoolean(SAVED_STATE_LIVE_UPDATE, mShouldLiveUpdate);
         editor.commit();
     }
 
@@ -223,11 +237,13 @@ public class VisualizationsActivity extends AppActivity {
         newFragment.setOnModifyListener(mOnModifyListener);
     }
 
-    public Calendar getOldestTimestamp() {
-        return oldestTimestamp;
-    }
+    public Calendar getOldestTimestamp() { return oldestTimestamp; }
 
     public Calendar getNewestTimestamp() { return newestTimestamp; }
+
+    public TimeInterval getTimeInterval() { return mTimeInterval; }
+
+    public boolean shouldLiveUpdate() { return mShouldLiveUpdate; }
 
     /**
      * Class used to receive information from other classes and components.
@@ -237,12 +253,89 @@ public class VisualizationsActivity extends AppActivity {
          * Updates one of the two timestamps' date based on a {@link DateSelector}'s new value.
          * @param oldestTimestamp The new timestamp year.
          * @param newestTimestamp The new timestamp month.
+         * @param timeInterval
+         * @param shouldLiveUpdate
          */
-        public void onModifyParameters(Calendar oldestTimestamp, Calendar newestTimestamp) {
+        public void onModifyParameters(
+                Calendar oldestTimestamp,
+                Calendar newestTimestamp,
+                TimeInterval timeInterval,
+                boolean shouldLiveUpdate) {
             VisualizationsActivity currentActivity = VisualizationsActivity.this;
-            currentActivity.oldestTimestamp = oldestTimestamp;
-            currentActivity.newestTimestamp = newestTimestamp;
+
+            currentActivity.mTimeInterval = timeInterval;
+            currentActivity.mShouldLiveUpdate = shouldLiveUpdate;
+
+            // Set oldest time in time interval.
+            if (shouldLiveUpdate) {
+                switch (timeInterval) {
+                    case DAY:
+                        currentActivity.oldestTimestamp = Calendar.getInstance();
+                        currentActivity.oldestTimestamp.add(Calendar.DAY_OF_YEAR, -1);
+                        break;
+                    case WEEK:
+                        currentActivity.oldestTimestamp = Calendar.getInstance();
+                        currentActivity.oldestTimestamp.add(Calendar.DAY_OF_YEAR, -7);
+                        break;
+                    case MONTH:
+                        currentActivity.oldestTimestamp = Calendar.getInstance();
+                        currentActivity.oldestTimestamp.add(Calendar.DAY_OF_YEAR, -30);
+                    default:
+                        currentActivity.oldestTimestamp = oldestTimestamp;
+                        break;
+                }
+            } else {
+                currentActivity.oldestTimestamp = oldestTimestamp;
+            }
+
+            // Set newest time in time interval.
+            if (shouldLiveUpdate) {
+                currentActivity.newestTimestamp = Calendar.getInstance();
+                //TODO(clidwin): Listen for updates and adjust visualization in real time.
+            } else {
+                switch (timeInterval) {
+                    case DAY:
+                        currentActivity.newestTimestamp = oldestTimestamp;
+                        currentActivity.newestTimestamp.add(Calendar.DAY_OF_YEAR, 1);
+                        break;
+                    case WEEK:
+                        currentActivity.newestTimestamp = oldestTimestamp;
+                        currentActivity.newestTimestamp.add(Calendar.DAY_OF_YEAR, 7);
+                        break;
+                    case MONTH:
+                        currentActivity.newestTimestamp = oldestTimestamp;
+                        currentActivity.newestTimestamp.add(Calendar.DAY_OF_YEAR, 30);
+                    default:
+                        currentActivity.newestTimestamp = newestTimestamp;
+                        break;
+                }
+            }
             currentActivity.refreshVisualization();
+        }
+    }
+
+    /**
+     * Enum used to tell which time frame is being used for the visualization.
+     */
+    public enum TimeInterval {
+        DAY (1),
+        WEEK (2),
+        MONTH (3),
+        CUSTOM (0);
+
+        public final int value;
+
+        TimeInterval(final int value) {
+            this.value = value;
+        }
+
+        public static TimeInterval getValue(int value) {
+            for (TimeInterval tR: TimeInterval.values()) {
+                if (tR.value == value) {
+                    return tR;
+                }
+            }
+            return null;
         }
     }
 

@@ -21,7 +21,7 @@ import java.util.Date;
  * Custom compound view to show a date selector.
  *
  * @author Christina Lidwin (clidwin)
- * @version June 30, 2015
+ * @version July 07, 2015
  */
 public class DateSelector extends LinearLayout {
     private final SimpleDateFormat mSimpleDateFormat;
@@ -116,6 +116,18 @@ public class DateSelector extends LinearLayout {
      */
     public void setOnSetListener(DateTimeDialogFragment.DateTimeDialogListener onDateSetListener) {
         mOnDateSetListener = onDateSetListener;
+    }
+
+    @Override
+    public void setEnabled(boolean isEnabled) {
+        super.setEnabled(isEnabled);
+
+        dateText = (TextView) findViewById(R.id.selector_text);
+        if(isEnabled) {
+            dateText.setTextColor(getResources().getColor(R.color.TextPrimary));
+        } else {
+            dateText.setTextColor(getResources().getColor(R.color.DisabledHintBlack));
+        }
     }
 
     /**

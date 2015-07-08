@@ -29,6 +29,7 @@
     <string name="last_updated_label">Last updated at</string>
     <string name="location_updated_message">Location updated</string>
     <string name="location_label">Coordinates </string>
+    <string name="menu_dialog_modify">Set Time Frame</string>
     <string name="no_address_found">No Address Found</string>
     <string name="no_geocoder_available">No geocoder available</string>
     <string name="no_location_data_provided">No Location Data Provided</string>
@@ -42,13 +43,20 @@
     <string name="icon_tray_save_view_desc">Saves the current view as a screenshot</string>
     <string name="icon_tray_raw_data_desc">Switches to viewing the raw data</string>
     <string name="icon_tray_modify_params_desc">Modify the parameters for the visualization</string>
+    <string name="tag_fragment_tile_visualization">fragment_tile_visualization</string>
     <string name="title_activity_raw_data">RawDataActivity</string>
 
     <string name="hello_world">Hello world!</string>
-    <string name="datetime_dialog_title">Custom DateTime Dialog</string>
-    <string name="dialog_daterange_make_change">Modify</string>
-    <string name="menu_dialog_modify">Date Range</string>
+    <string name="dialog_daterange_custom_range_label">Time Frame</string>
     <string name="dialog_daterange_to_label">To</string>
     <string name="dialog_daterange_from_label">From</string>
-    <string name="tag_fragment_tile_visualization">fragment_tile_visualization</string>
+    <string name="dialog_daterange_make_change">Update</string>
+    <string name="dialog_daterange_interval_text_label">Interval</string>
+    <string name="dialog_daterange_standard_range_label">Standard Timeframe</string>
+    <string name="dialog_daterange_switch_label">Use Current Time</string>
+    <string name="dialog_daterange_update_text_label">Auto-Update</string>
+    <string name="dialog_daterange_radiobutton_week">Week</string>
+    <string name="dialog_daterange_radiobutton_month">Month</string>
+    <string name="dialog_daterange_radiobutton_day">Day</string>
+    <string name="dialog_daterange_radiobutton_custom">Custom</string>
 </resources>

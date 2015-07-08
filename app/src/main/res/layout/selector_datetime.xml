@@ -4,7 +4,7 @@
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
-        android:paddingTop="@dimen/action_padding">
+        android:paddingTop="@dimen/space_between_content_areas">
 
         <RelativeLayout
             android:layout_width="wrap_content"

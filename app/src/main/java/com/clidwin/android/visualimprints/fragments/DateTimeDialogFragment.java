@@ -2,12 +2,15 @@ package com.clidwin.android.visualimprints.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.RadioGroup;
 
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.activities.VisualizationsActivity;
@@ -20,7 +23,7 @@ import java.util.Calendar;
  * Custom dialog for modifying the dates and times shown in the visualization.
  *
  * @author Christina Lidwin
- * @version June 30, 2015
+ * @version July 7, 2015
  */
 public class DateTimeDialogFragment extends DialogFragment {
     protected static final String TAG = "vi-dialog-datetime";
@@ -28,6 +31,8 @@ public class DateTimeDialogFragment extends DialogFragment {
     DateTimeDialogListener mListener;
     private Calendar oldestTimestamp;
     private Calendar newestTimestamp;
+    private VisualizationsActivity.TimeInterval timeInterval;
+    private boolean shouldLiveUpdate;
     private VisualizationsActivity.OnModifyListener mOnModifytListener;
 
     @Override
@@ -39,6 +44,8 @@ public class DateTimeDialogFragment extends DialogFragment {
         VisualizationsActivity visualizationsActivity = (VisualizationsActivity) getActivity();
         oldestTimestamp = visualizationsActivity.getOldestTimestamp();
         newestTimestamp = visualizationsActivity.getNewestTimestamp();
+        timeInterval = visualizationsActivity.getTimeInterval();
+        shouldLiveUpdate = visualizationsActivity.shouldLiveUpdate();
     }
 
     @Override
@@ -79,15 +86,44 @@ public class DateTimeDialogFragment extends DialogFragment {
         newTime.setTime(newestTimestamp.getTime());
         newTime.setOnSetListener(mListener);
 
+        final SwitchCompat liveUpdateSwitch =
+                (SwitchCompat) view.findViewById(R.id.daterange_standard_switch_currentime);
+        liveUpdateSwitch.setChecked(shouldLiveUpdate);
+        toggleToFields(view);
+        liveUpdateSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    shouldLiveUpdate = true;
+                    toggleToFields(buttonView.getRootView());
+                } else {
+                    shouldLiveUpdate = false;
+                    toggleToFields(buttonView.getRootView());
+                }
+            }
+        });
+
+        final RadioGroup timeIntervalGroup =
+                (RadioGroup) view.findViewById(R.id.daterange_standard_radiogroup);
+        setInitialTimeInterval(timeIntervalGroup, timeInterval);
+        timeIntervalGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                updateSelectedTimeInterval(group, checkedId);
+            }
+        });
+        updateSelectedTimeInterval(timeIntervalGroup);
+
         Button modifyButton = (Button) view.findViewById(R.id.toolbar_dialog_datetime_modify);
         modifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e(TAG, "timestamps modify clicked");
-                if(mOnModifytListener != null) {
+                if (mOnModifytListener != null) {
                     mOnModifytListener.onModifyParameters(
                             oldestTimestamp,
-                            newestTimestamp
+                            newestTimestamp,
+                            timeInterval,
+                            shouldLiveUpdate
                     );
                 }
                 dismiss();
@@ -98,12 +134,117 @@ public class DateTimeDialogFragment extends DialogFragment {
     }
 
     /**
+     * Toggles en(dis)abling customization for the most recent point in the time interval.
+     * @param parentView The parent view for elements allowing for a customized time and date.
+     */
+    private void toggleToFields(View parentView) {
+        DateSelector newDate = (DateSelector) parentView.findViewById(R.id.toDate);
+        newDate.setEnabled(!shouldLiveUpdate);
+
+        TimeSelector newTime = (TimeSelector) parentView.findViewById(R.id.toTime);
+        newTime.setEnabled(!shouldLiveUpdate);
+    }
+
+    /**
+     * Toggles en(dis)abling customization for the least recent point in the time interval.
+     * @param parentView The parent view for elements allowing for a customized time and date.
+     */
+    private void toggleFromFields(boolean enableFields, View parentView) {
+        DateSelector oldDate = (DateSelector) parentView.findViewById(R.id.fromDate);
+        oldDate.setEnabled(enableFields);
+
+        TimeSelector oldTime = (TimeSelector) parentView.findViewById(R.id.fromTime);
+        oldTime.setEnabled(enableFields);
+    }
+
+    /**
      * Sets the OnModifyListener for this class (makes it possible for other classes to listen
      *      for changes made in this class)
      * @param onModifyListener The listener being added.
      */
     public void setOnModifyListener(VisualizationsActivity.OnModifyListener onModifyListener) {
         mOnModifytListener = onModifyListener;
+    }
+
+    /**
+     * Updates UI elements based on the selected time interval
+     *
+     * @param timeIntervalGroup The group of radio buttons controlling the time interval.
+     */
+    private void updateSelectedTimeInterval(RadioGroup timeIntervalGroup) {
+        View parentView = timeIntervalGroup.getRootView();
+        int dateDifference = 0;
+        switch(timeInterval) {
+            case DAY:
+                toggleFromFields(false, parentView);
+                dateDifference = -1;
+                break;
+            case WEEK:
+                toggleFromFields(false, parentView);
+                dateDifference = -7;
+                break;
+            case MONTH:
+                toggleFromFields(false, parentView);
+                //TODO(clidwin): do a month to month calculation on 1 month difference
+                dateDifference = -30;
+                break;
+            default:
+                toggleFromFields(true, parentView);
+                return;
+        }
+
+        DateSelector oldDate = (DateSelector) parentView.findViewById(R.id.fromDate);
+        Calendar oldestDateTimeInInterval = Calendar.getInstance();
+        oldestDateTimeInInterval.add(Calendar.DAY_OF_YEAR, dateDifference);
+        oldestTimestamp.setTimeInMillis(oldestDateTimeInInterval.getTimeInMillis());
+        oldDate.setDate(oldestTimestamp.getTime());
+    }
+
+    /**
+     * Updates UI elements based on the selected time interval
+     *
+     * @param selectedTimeInterval The group of radio buttons controlling the time interval.
+     * @param checkedId The id of the selected radio button.
+     */
+    private void updateSelectedTimeInterval(RadioGroup selectedTimeInterval, int checkedId) {
+        switch(checkedId) {
+            case R.id.daterange_standard_radiobutton_day:
+                timeInterval = VisualizationsActivity.TimeInterval.DAY;
+                break;
+            case R.id.daterange_standard_radiobutton_week:
+                timeInterval = VisualizationsActivity.TimeInterval.WEEK;
+                break;
+            case R.id.daterange_standard_radiobutton_month:
+                timeInterval = VisualizationsActivity.TimeInterval.MONTH;
+                break;
+            default:
+                timeInterval = VisualizationsActivity.TimeInterval.CUSTOM;
+                break;
+        }
+        updateSelectedTimeInterval(selectedTimeInterval);
+    }
+
+    /**
+     * Sets the initial time interval for the dialog.
+     * @param selectedTimeInterval The group of radio buttons controlling the time interval.
+     * @param timeInterval The time interval to set.
+     */
+    private void setInitialTimeInterval(
+            RadioGroup selectedTimeInterval, VisualizationsActivity.TimeInterval timeInterval) {
+        switch(timeInterval) {
+            case DAY:
+                selectedTimeInterval.check(R.id.daterange_standard_radiobutton_day);
+                break;
+            case WEEK:
+                selectedTimeInterval.check(R.id.daterange_standard_radiobutton_week);
+                break;
+            case MONTH:
+                selectedTimeInterval.check(R.id.daterange_standard_radiobutton_month);
+                break;
+            default:
+                selectedTimeInterval.check(R.id.daterange_standard_radiobutton_custom);
+                break;
+        }
     }
 
     /**

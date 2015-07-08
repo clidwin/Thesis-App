@@ -22,7 +22,7 @@ import java.util.Date;
  * Custom compound view to show a time selector.
  *
  * @author Christina Lidwin (clidwin)
- * @version June 30, 2015
+ * @version July 07, 2015
  */
 public class TimeSelector extends LinearLayout {
     private final SimpleDateFormat mSimpleTimeFormat;
@@ -32,6 +32,7 @@ public class TimeSelector extends LinearLayout {
     private DateTimeDialogFragment.DateTimeDialogListener mOnTimeSetListener;
 
     public TimeSelector(Context context) {
+        //TODO(clidwin): Condense constructor logic (ie. this(context, null);)
         super(context);
         initializeViews(context);
 
@@ -117,6 +118,19 @@ public class TimeSelector extends LinearLayout {
      */
     public void setOnSetListener(DateTimeDialogFragment.DateTimeDialogListener onDateSetListener) {
         mOnTimeSetListener = onDateSetListener;
+    }
+
+    @Override
+    public void setEnabled(boolean isEnabled) {
+        super.setEnabled(isEnabled);
+
+        //TODO(clidwin): Add fade in and out (and update DateSelector too)
+        timeText = (TextView) findViewById(R.id.selector_text);
+        if(isEnabled) {
+            timeText.setTextColor(getResources().getColor(R.color.TextPrimary));
+        } else {
+            timeText.setTextColor(getResources().getColor(R.color.DisabledHintBlack));
+        }
     }
 
     /**
