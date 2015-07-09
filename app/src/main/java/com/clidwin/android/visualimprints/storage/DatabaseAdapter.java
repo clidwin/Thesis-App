@@ -16,12 +16,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Facilitates communication between the application and its database.
  *
  * @author Christina Lidwin (clidwin)
- * @version June 01, 2015
+ * @version July 09, 2015
  */
 public class DatabaseAdapter {
     private static final String TAG = "vi-database-adapter";
@@ -29,7 +31,8 @@ public class DatabaseAdapter {
     private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
 
-    private final SimpleDateFormat DateFormatter = new SimpleDateFormat(Constants.DATABASE_DATE_FORMAT);
+    private final SimpleDateFormat DateFormatter =
+            new SimpleDateFormat(Constants.DATABASE_DATE_FORMAT, Locale.getDefault());
 
     public DatabaseAdapter(Context context) {
         this.dbHelper = new DatabaseHelper(context);
@@ -74,7 +77,8 @@ public class DatabaseAdapter {
      * @return A database-ready version of location information.
      */
     private ContentValues generateContentValues(GeospatialPin pin) {
-        SimpleDateFormat timeFormat = new SimpleDateFormat(Constants.DATABASE_TIME_FORMAT);
+        SimpleDateFormat timeFormat =
+                new SimpleDateFormat(Constants.DATABASE_TIME_FORMAT, Locale.getDefault());
 
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.Keys._ID, pin.getArrivalTime().hashCode());
@@ -196,8 +200,8 @@ public class DatabaseAdapter {
                 geospatialPinList.add(constructGeospatialPin(c));
             } while (c.moveToNext());
         }
+
         c.close();
-        Log.d(TAG, "List size: " + geospatialPinList.size());
         return geospatialPinList;
     }
 
@@ -208,25 +212,42 @@ public class DatabaseAdapter {
      *      within the date and time range.
      */
     public ArrayList<GeospatialPin> getEntriesInDateRange(Calendar olderDay, Calendar newerDay) {
+        //TODO(clidwin): Incorporate timestamp into query
+        ArrayList<String> dates = new ArrayList<>();
+        dates.add(DateFormatter.format(newerDay.getTime()));
 
-        //TODO(clidwin): implement this method by timestamp rather than date.
-        String [] dates = {
-                DateFormatter.format(olderDay.getTime()),
-                DateFormatter.format(newerDay.getTime())
-        };
-        ArrayList<GeospatialPin> last24HourPins = new ArrayList<>();
+        long numDays = TimeUnit.DAYS.convert(
+                newerDay.getTimeInMillis() - olderDay.getTimeInMillis(), // Difference in time ms
+                TimeUnit.MILLISECONDS
+        );
+        if (numDays > 0) {
+            dates.add(DateFormatter.format(olderDay.getTime()));
+            numDays--;
 
-        String sortOrder = DatabaseHelper.Keys.COLUMN_NAME_ARRIVAL_TIME + " DESC";
+            // Add all the days in between the oldest and newest times
+            Calendar tempCal = Calendar.getInstance();
+            tempCal.setTimeInMillis(olderDay.getTimeInMillis());
+            for (int i=0; i<numDays; i++) {
+                tempCal.add(Calendar.DAY_OF_YEAR, 1);
+                dates.add(DateFormatter.format(tempCal.getTime()));
+            }
 
-        //TODO(clidwin): Update to get all entries between dates instead of just the bookmark dates
-        for (GeospatialPin pin: getAllEntriesFromDates(sortOrder, dates)) {
+            Log.e(TAG, "Dates recorded: " + dates.size());
+        }
+
+        String [] allDates = new String[dates.size()];
+        allDates = dates.toArray(allDates);
+
+        // Retrieve all dates recorded in the range
+        ArrayList<GeospatialPin> pinsInDateRange = new ArrayList<>();
+        for (GeospatialPin pin: getAllEntriesFromDates(allDates)) {
             if (pin.getArrivalTime().after(olderDay.getTime()) &&
                     pin.getArrivalTime().before(newerDay.getTime())) {
-                last24HourPins.add(pin);
+                pinsInDateRange.add(pin);
             }
         }
 
-        return last24HourPins;
+        return pinsInDateRange;
     }
 
 
@@ -283,7 +304,7 @@ public class DatabaseAdapter {
         try {
             // Extract Date Information
             SimpleDateFormat dateTimeFormatter =
-                    new SimpleDateFormat(Constants.DATABASE_DATE_TIME_FORMAT);
+                    new SimpleDateFormat(Constants.DATABASE_DATE_TIME_FORMAT, Locale.getDefault());
             Date arrivalDateTime = dateTimeFormatter.parse(arrivalDate + " " + arrivalTime);
 
             // Reconstruct location information
@@ -291,11 +312,12 @@ public class DatabaseAdapter {
             location.setLatitude(latitude);
             location.setLongitude(longitude);
 
-            GeospatialPin pin = new GeospatialPin(location, arrivalDateTime, duration);
+            return new GeospatialPin(location, arrivalDateTime, duration);
             //TODO(clidwin): Create the address object and then uncomment the line below
+            //GeospatialPin pin = new GeospatialPin(location, arrivalDateTime, duration);
             //pin.setAddress(pinAddress);
             //c.close();
-            return pin;
+            //return pin;
         } catch (ParseException e) {
             e.printStackTrace();
             //c.close();
