@@ -34,6 +34,10 @@ public class DateTimeDialogFragment extends DialogFragment {
     private VisualizationsActivity.TimeInterval timeInterval;
     private boolean shouldLiveUpdate;
     private VisualizationsActivity.OnModifyListener mOnModifytListener;
+    private DateSelector newDate;
+    private TimeSelector newTime;
+    private TimeSelector oldTime;
+    private DateSelector oldDate;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,19 +74,19 @@ public class DateTimeDialogFragment extends DialogFragment {
         }
 
         //Set initial dates and times
-        DateSelector oldDate = (DateSelector) view.findViewById(R.id.fromDate);
+        oldDate = (DateSelector) view.findViewById(R.id.fromDate);
         oldDate.setDate(oldestTimestamp.getTime());
         oldDate.setOnSetListener(mListener);
 
-        TimeSelector oldTime = (TimeSelector) view.findViewById(R.id.fromTime);
+        oldTime = (TimeSelector) view.findViewById(R.id.fromTime);
         oldTime.setTime(oldestTimestamp.getTime());
         oldTime.setOnSetListener(mListener);
 
-        DateSelector newDate = (DateSelector) view.findViewById(R.id.toDate);
+        newDate = (DateSelector) view.findViewById(R.id.toDate);
         newDate.setDate(newestTimestamp.getTime());
         newDate.setOnSetListener(mListener);
 
-        TimeSelector newTime = (TimeSelector) view.findViewById(R.id.toTime);
+        newTime = (TimeSelector) view.findViewById(R.id.toTime);
         newTime.setTime(newestTimestamp.getTime());
         newTime.setOnSetListener(mListener);
 
@@ -96,6 +100,20 @@ public class DateTimeDialogFragment extends DialogFragment {
                 if (isChecked) {
                     shouldLiveUpdate = true;
                     toggleToFields(buttonView.getRootView());
+
+                    Calendar currentDateTime = Calendar.getInstance();
+                    newestTimestamp = currentDateTime;
+                    newDate.setDate(currentDateTime.getTime());
+                    newTime.setTime(currentDateTime.getTime());
+
+                    // Auto-update from fields if the FromDate/Time options are disabled
+                    if (!timeInterval.equals(VisualizationsActivity.TimeInterval.CUSTOM)) {
+                        oldestTimestamp = newestTimestamp;
+                        oldestTimestamp.add(Calendar.DAY_OF_YEAR, 0 - timeInterval.value);
+
+                        oldDate.setDate(oldestTimestamp.getTime());
+                        oldTime.setTime(oldestTimestamp.getTime());
+                    }
                 } else {
                     shouldLiveUpdate = false;
                     toggleToFields(buttonView.getRootView());
@@ -118,6 +136,7 @@ public class DateTimeDialogFragment extends DialogFragment {
         modifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //TODO(clidwin): Error checking for if a fromDate is after a toDate
                 if (mOnModifytListener != null) {
                     mOnModifytListener.onModifyParameters(
                             oldestTimestamp,
@@ -265,6 +284,15 @@ public class DateTimeDialogFragment extends DialogFragment {
              } else {
                 newestTimestamp.set(year, monthOfYear, dayOfMonth);
              }
+
+            // Auto-update from fields if the FromDate/Time options are disabled
+            if (!timeInterval.equals(VisualizationsActivity.TimeInterval.CUSTOM)) {
+                oldestTimestamp = newestTimestamp;
+                oldestTimestamp.add(Calendar.DAY_OF_YEAR, 0 - timeInterval.value);
+
+                oldDate.setDate(oldestTimestamp.getTime());
+                oldTime.setTime(oldestTimestamp.getTime());
+            }
          }
 
         /**
@@ -280,6 +308,15 @@ public class DateTimeDialogFragment extends DialogFragment {
             } else {
                 newestTimestamp.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 newestTimestamp.set(Calendar.MINUTE, minute);
+
+                // Auto-update from fields if the FromDate/Time options are disabled
+                if (!timeInterval.equals(VisualizationsActivity.TimeInterval.CUSTOM)) {
+                    oldestTimestamp = newestTimestamp;
+                    oldestTimestamp.add(Calendar.DAY_OF_YEAR, 0 - timeInterval.value);
+
+                    oldDate.setDate(oldestTimestamp.getTime());
+                    oldTime.setTime(oldestTimestamp.getTime());
+                }
             }
         }
     }

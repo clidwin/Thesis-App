@@ -11,7 +11,7 @@ public final class Constants {
 
     public static final int FAILURE_RESULT = 1;
 
-    public static final String PACKAGE_NAME = "com.google.android.visualimprints";
+    public static final String PACKAGE_NAME = "com.clidwin.android.visualimprints";
 
     public static final String RECEIVER = PACKAGE_NAME + ".RECEIVER";
 

@@ -18,7 +18,7 @@
     <string name="address_found">Address Found!</string>
     <string name="address_label">Address: </string>
     <string name="all_locations_label">All Locations</string>
-    <string name="app_name">Visual Imprints</string>
+    <string name="app_name">Data Atlas</string>
     <string name="arrival_time_label">Arrival: </string>
     <string name="coordinates_latitude_label">Latitude: </string>
     <string name="coordinates_longitude_label">Longitude: </string>

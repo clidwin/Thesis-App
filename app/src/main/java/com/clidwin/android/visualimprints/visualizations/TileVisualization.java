@@ -17,22 +17,20 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.activities.VisualizationsActivity;
 import com.clidwin.android.visualimprints.location.GeospatialPin;
-import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 import com.clidwin.android.visualimprints.ui.PinRect;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
 /**
- * Controlling class for the entire application.
+ * Visualization for locational data based on a tile/grid structure.
  *
  * @author Christina Lidwin (clidwin)
- * @version June 01, 2015
+ * @version July 09, 2015
  */
-public class TileVisualization extends View {
-    private static final String TAG = "visualimprints-test-vis";
+public class TileVisualization extends ParentVisualization {
+    private static final String TAG = "visualimprints-tile-vis";
 
     //private final boolean mShowText;
     private Paint mFillPaint;
@@ -44,7 +42,6 @@ public class TileVisualization extends View {
     private float hourCellHeight;
     private float hourCellWidth;
 
-    private ArrayList<GeospatialPin> lastLocations;
     private ArrayList<PinRect> drawnRects;
 
     GregorianCalendar arrivalTime = new GregorianCalendar();
@@ -54,7 +51,7 @@ public class TileVisualization extends View {
 
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attributes,
-                R.styleable.TileVisualization,
+                R.styleable.Visualization,
                 0, 0);
 
         try {
@@ -67,20 +64,6 @@ public class TileVisualization extends View {
         drawnRects = new ArrayList<>();
 
         popUp = new PopupWindow();
-
-        VisualizationsActivity activity = (VisualizationsActivity) getContext();
-        if (activity != null) {
-            DatabaseAdapter dbAdapter = activity.getDatabaseAdapter();
-            lastLocations = dbAdapter.getEntriesInDateRange(
-                    activity.getOldestTimestamp(), activity.getNewestTimestamp());
-            Log.e(TAG, "Number of locations: " + lastLocations.size());
-            for(GeospatialPin pin: lastLocations) {
-                //TODO(clidwin): Switch this to a debug log
-                Log.e(TAG, pin.getArrivalTime().toString());
-            }
-        } else {
-            Log.e(TAG, "Database disconnected");
-        }
     }
 
     /**

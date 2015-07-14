@@ -26,7 +26,7 @@ import java.util.Calendar;
  * based on Fragment points of view (to utilize material design).
  *
  * @author Christina Lidwin
- * @version July 7, 2015
+ * @version July 13, 2015
  */
 public class VisualizationsActivity extends AppActivity {
     private static final String TAG = "main-activity-visuals";
@@ -89,6 +89,11 @@ public class VisualizationsActivity extends AppActivity {
     private void loadSharedPreferences() {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
 
+        int timeRange = preferences.getInt(SAVED_STATE_TIME_RANGE, -1);
+        if(timeRange != -1) {
+            mTimeInterval = TimeInterval.getValue(timeRange);
+        }
+
         long oldestTime = preferences.getLong(SAVED_STATE_OLDEST_TIMESTAMP, -1);
         if (oldestTime != -1) {
             oldestTimestamp.setTimeInMillis(oldestTime);
@@ -99,12 +104,28 @@ public class VisualizationsActivity extends AppActivity {
             newestTimestamp.setTimeInMillis(newestTime);
         }
 
-        int timeRange = preferences.getInt(SAVED_STATE_TIME_RANGE, -1);
-        if(timeRange != -1) {
-            mTimeInterval = TimeInterval.getValue(timeRange);
+        if (mShouldLiveUpdate) {
+            updateCalendarsLive();
+        }
+    }
+
+    /**
+     * Update the Calendar objects for the oldest and newest timestamp based on a pre-determined
+     * time interval and the current system time.
+     */
+    private void updateCalendarsLive() {
+        Calendar tempDateTime = Calendar.getInstance();
+        int timeDiff = (int)(newestTimestamp.getTimeInMillis() - oldestTimestamp.getTimeInMillis());
+
+        newestTimestamp.setTimeInMillis(tempDateTime.getTimeInMillis());
+
+        tempDateTime = calculateOldestTime(mTimeInterval, tempDateTime);
+        if (tempDateTime == null) {
+            tempDateTime = newestTimestamp;
+            tempDateTime.add(Calendar.MILLISECOND, 0 - timeDiff);
         }
 
-        mShouldLiveUpdate = preferences.getBoolean(SAVED_STATE_LIVE_UPDATE, true);
+        oldestTimestamp = tempDateTime;
     }
 
     @Override
@@ -268,23 +289,10 @@ public class VisualizationsActivity extends AppActivity {
 
             // Set oldest time in time interval.
             if (shouldLiveUpdate) {
-                switch (timeInterval) {
-                    case DAY:
-                        currentActivity.oldestTimestamp = Calendar.getInstance();
-                        currentActivity.oldestTimestamp.add(Calendar.DAY_OF_YEAR, -1);
-                        break;
-                    case WEEK:
-                        currentActivity.oldestTimestamp = Calendar.getInstance();
-                        currentActivity.oldestTimestamp.add(Calendar.DAY_OF_YEAR, -7);
-                        break;
-                    case MONTH:
-                        currentActivity.oldestTimestamp = Calendar.getInstance();
-                        currentActivity.oldestTimestamp.add(Calendar.DAY_OF_YEAR, -30);
-                    default:
-                        currentActivity.oldestTimestamp = oldestTimestamp;
-                        break;
-                }
-            } else {
+                currentActivity.oldestTimestamp =
+                        calculateOldestTime(timeInterval, Calendar.getInstance());
+            }
+            if (currentActivity.oldestTimestamp == null || !shouldLiveUpdate ){
                 currentActivity.oldestTimestamp = oldestTimestamp;
             }
 
@@ -314,13 +322,24 @@ public class VisualizationsActivity extends AppActivity {
         }
     }
 
+    private Calendar calculateOldestTime(TimeInterval timeInterval, Calendar newerTime) {
+        Calendar oldestTime = null;
+
+        if (!timeInterval.equals(TimeInterval.CUSTOM)) {
+            oldestTime = newerTime;
+            oldestTime.add(Calendar.DAY_OF_YEAR, 0 - timeInterval.value);
+        }
+
+        return oldestTime;
+    }
+
     /**
      * Enum used to tell which time frame is being used for the visualization.
      */
     public enum TimeInterval {
         DAY (1),
-        WEEK (2),
-        MONTH (3),
+        WEEK (7),
+        MONTH (30),
         CUSTOM (0);
 
         public final int value;
