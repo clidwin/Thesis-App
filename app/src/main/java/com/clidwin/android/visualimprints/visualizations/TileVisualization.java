@@ -114,9 +114,9 @@ public class TileVisualization extends ParentVisualization {
             }
 
             // Select color.
-            mFillPaint.setColor(Color.GREEN);
+            mFillPaint.setColor(getResources().getColor(R.color.light_blue_500));
             if (colorReverse) {
-                mFillPaint.setColor(Color.DKGRAY);
+                mFillPaint.setColor(getResources().getColor(R.color.light_blue_200));
             }
 
             // Draw cell.
