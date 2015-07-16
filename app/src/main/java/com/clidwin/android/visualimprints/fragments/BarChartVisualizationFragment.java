@@ -9,30 +9,33 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.clidwin.android.visualimprints.R;
+import com.clidwin.android.visualimprints.visualizations.ParentVisualization;
 
 /**
  * View to display a test fragment.
  *
  * @author Christina Lidwin
- * @version May 12, 2015
+ * @version July 15, 2015
  */
-public class TileVisualizationFragment extends Fragment {
+public class BarChartVisualizationFragment extends VisualizationFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view =inflater.inflate(R.layout.fragment_visualization_tile,container,false);
+        View view =inflater.inflate(R.layout.fragment_visualization_bar,container,false);
         return view;
     }
 
-    public static TileVisualizationFragment newInstance(Context context) {
-        TileVisualizationFragment newFragment = new TileVisualizationFragment();
+    public static BarChartVisualizationFragment newInstance(Context context) {
+        VisualizationFragment newFragment = new BarChartVisualizationFragment();
 
         Bundle args = new Bundle();
         args.putString("tag", context.getString(R.string.tag_fragment_tile_visualization));
         newFragment.setArguments(args);
 
-        return newFragment;
+        fragment = newFragment;
+
+        return (BarChartVisualizationFragment)newFragment;
     }
 
 }

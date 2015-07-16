@@ -10,4 +10,7 @@
     <item name="icon_tray_raw_data" type="id" />
     <item name="icon_tray_save_view" type="id" />
     <item name="icon_tray_view_parameters" type="id" />
+    <item name="fragmentVisualization" type="id">fragmentVisualization</item>
+    <item name="tileVisualization" type="id">tileVisualization</item>
+    <item name="barVisualization" type="id">barVisualization</item>
 </resources>
