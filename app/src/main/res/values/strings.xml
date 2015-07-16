@@ -43,8 +43,9 @@
     <string name="icon_tray_save_view_desc">Saves the current view as a screenshot</string>
     <string name="icon_tray_raw_data_desc">Switches to viewing the raw data</string>
     <string name="icon_tray_modify_params_desc">Modify the parameters for the visualization</string>
+    <string name="tag_fragment_bar_chart_visualization">fragment_bar_chart_visualization</string>
     <string name="tag_fragment_tile_visualization">fragment_tile_visualization</string>
-    <string name="title_activity_raw_data">RawDataActivity</string>
+    <string name="title_activity_raw_data">Raw Data</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="dialog_daterange_custom_range_label">Time Frame</string>

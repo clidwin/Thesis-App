@@ -4,11 +4,13 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -30,13 +32,15 @@ import java.util.Date;
  * Retrieves location information
  *
  * @author Christina Lidwin (clidwin)
- * @version June 01, 2015
+ * @version July 15, 2015
  */
 public class GpsLocationService extends Service
         implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "gps-location-service";
+
+    private static final String SAVED_STATE_LAST_UPDATED_TIME = "lastUpdatedTime";
 
     DatabaseAdapter dbAdapter;
     GeospatialPin mostRecentPin;
@@ -45,6 +49,7 @@ public class GpsLocationService extends Service
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
     ViLocationListener mLocationListener;
+    private long lastUpdatedTime;
 
     public GpsLocationService() {
         super();
@@ -81,6 +86,23 @@ public class GpsLocationService extends Service
 
         //subscribeToLocationUpdates();
         createNotification("Location service is running.");
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        int toReturn = super.onStartCommand(intent, flags, startId);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        lastUpdatedTime = preferences.getLong(SAVED_STATE_LAST_UPDATED_TIME, -1);
+
+        // Create database connection if it does not already exist.
+        if (dbAdapter == null) {
+            dbAdapter = new DatabaseAdapter(this);
+            dbAdapter.open();
+        }
+        mostRecentPin = dbAdapter.getMostRecentEntry();
+
+        return toReturn;
     }
 
     /**
@@ -176,15 +198,10 @@ public class GpsLocationService extends Service
                 .setSmallestDisplacement(Constants.UPDATE_DISTANCE);
 
         // Request last location to get an immediate update, then request continuous updates.
+        //TODO(clidwin): Update the duration of the last location using the last recorded time.
         LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, mLocationListener);
-
-        // Create database connection if it does not already exist.
-        if (dbAdapter == null) {
-            dbAdapter = new DatabaseAdapter(this);
-            dbAdapter.open();
-        }
 
         Log.d(TAG, getClass().getSimpleName() + " started.");
     }
@@ -192,6 +209,11 @@ public class GpsLocationService extends Service
     @Override
     public void onConnectionSuspended(int i) {
         //TODO(clidwin): Indicate when connection is suspended.
+
+        SharedPreferences.Editor editor =
+                PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putLong(SAVED_STATE_LAST_UPDATED_TIME, lastUpdatedTime);
+        editor.commit();
     }
 
     @Override
@@ -231,11 +253,25 @@ public class GpsLocationService extends Service
 
             // Create pin from location and retrieve the most recent previously recorded pin.
             GeospatialPin newPin = new GeospatialPin(location);
-            if (mostRecentPin == null) {
-                mostRecentPin = dbAdapter.getMostRecentEntry();
-            }
 
             if (mostRecentPin != null) {
+                location.setSpeed(calculateSpeed(mostRecentPin.getLocation(), location));
+                /*if (location.getAccuracy() < 100 && location.getSpeed() < 6.45) {
+                    //TODO(clidwin): Update the GPS last checked time.
+                    Log.d(TAG, "High probability location hasn't changed.");
+
+                    long duration = (new Date()).getTime() - mostRecentPin.getArrivalTime().getTime();
+                    mostRecentPin.setDuration(duration);
+                    dbAdapter.updateEntry(mostRecentPin);
+
+                    return;
+                } else if (location.getAccuracy() > 100) {
+                    Log.d(TAG, "Location is inaccurate");
+                } else if (location.getSpeed() > 6.45) {
+                    //TODO(clidwin): Record this as a motion value.
+                    Log.d(TAG, "Moving too fast to get accurate location");
+                }*/
+
                 Location newLocation = newPin.getLocation();
                 Location recentLocation = mostRecentPin.getLocation();
 
@@ -264,10 +300,27 @@ public class GpsLocationService extends Service
 
             dbAdapter.addNewEntry(newPin);
             mostRecentPin = newPin;
+            lastUpdatedTime = new Date().getTime();
 
             //Broadcast a change was made
             Log.d(TAG, "New location recorded");
             sendBroadcast(Constants.BROADCAST_NEW_LOCATION);
         }
+    }
+
+    /**
+     * Calculates the speed between two recorded locations
+     *
+     * @param lastRecordedLocation The location recorded before newLocation was found
+     * @param newLocation The newest location information
+     *
+     * @return the speed in meters per second
+     */
+    private float calculateSpeed(Location lastRecordedLocation, Location newLocation) {
+        double distance = distanceBetweenLocations(lastRecordedLocation, newLocation);
+        Log.d(TAG, "Calculated distance is: " + distance);
+        long timeInMilliseconds = newLocation.getTime() - lastRecordedLocation.getTime();
+        Log.d(TAG, "Calculated speed is: " + (float)(distance/(timeInMilliseconds*1000)));
+        return (float)(distance/(timeInMilliseconds*1000));
     }
 }
