@@ -246,7 +246,6 @@ public class DatabaseAdapter {
                 pinsInDateRange.add(pin);
             }
         }
-        Log.e(TAG, "Database entries found for range " + olderDay.getTime().toString() + " to " + newerDay.getTime().toString() + ": "  + pinsInDateRange.size());
 
         return pinsInDateRange;
     }

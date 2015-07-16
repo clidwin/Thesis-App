@@ -40,7 +40,7 @@ public final class Constants {
     /**
      * Desired distance to receive location updates in meters (updates may be more or less frequent)
      */
-    public static final long UPDATE_DISTANCE = 5;
+    public static final long UPDATE_DISTANCE = 0;
 
     /**
      * String code based on:

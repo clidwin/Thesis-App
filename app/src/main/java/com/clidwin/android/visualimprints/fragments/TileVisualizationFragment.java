@@ -21,7 +21,7 @@ public class TileVisualizationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view =inflater.inflate(R.layout.fragment_visualization_tile,container,false);
+        View view =inflater.inflate(R.layout.fragment_visualization,container,false);
         return view;
     }
 

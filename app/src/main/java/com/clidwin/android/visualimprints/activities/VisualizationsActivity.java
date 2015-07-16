@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
@@ -17,10 +16,8 @@ import android.widget.ImageButton;
 
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.fragments.DateTimeDialogFragment;
-import com.clidwin.android.visualimprints.fragments.VisualizationFragment;
 import com.clidwin.android.visualimprints.layout.ViewPagerAdapter;
 import com.clidwin.android.visualimprints.ui.DateSelector;
-import com.clidwin.android.visualimprints.visualizations.ParentVisualization;
 
 import java.util.Calendar;
 
@@ -41,9 +38,7 @@ public class VisualizationsActivity extends AppActivity {
     // Declaring Your View and Variables
     ViewPager pager;
     ViewPagerAdapter viewPageAdapter;
-
-    //TODO(clidwin): Make this dynamically find visualizations
-    CharSequence titles[]={"Tile", "Bar", "Map"};
+    CharSequence titles[]={"Visualization", "Raw Data"};
 
     private boolean mIsLargeLayout;
 
@@ -57,7 +52,7 @@ public class VisualizationsActivity extends AppActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_visualizations);
+        setContentView(R.layout.activity_main);
 
         viewPageAdapter =  new ViewPagerAdapter(this, getSupportFragmentManager(), titles);
         mIsLargeLayout = getResources().getBoolean(R.bool.large_layout);
@@ -308,21 +303,15 @@ public class VisualizationsActivity extends AppActivity {
             } else {
                 switch (timeInterval) {
                     case DAY:
-                        currentActivity.newestTimestamp = Calendar.getInstance();
-                        currentActivity.newestTimestamp.setTimeInMillis(
-                                oldestTimestamp.getTime().getTime());
+                        currentActivity.newestTimestamp = oldestTimestamp;
                         currentActivity.newestTimestamp.add(Calendar.DAY_OF_YEAR, 1);
                         break;
                     case WEEK:
-                        currentActivity.newestTimestamp = Calendar.getInstance();
-                        currentActivity.newestTimestamp.setTimeInMillis(
-                                oldestTimestamp.getTime().getTime());
+                        currentActivity.newestTimestamp = oldestTimestamp;
                         currentActivity.newestTimestamp.add(Calendar.DAY_OF_YEAR, 7);
                         break;
                     case MONTH:
-                        currentActivity.newestTimestamp = Calendar.getInstance();
-                        currentActivity.newestTimestamp.setTimeInMillis(
-                                oldestTimestamp.getTime().getTime());
+                        currentActivity.newestTimestamp = oldestTimestamp;
                         currentActivity.newestTimestamp.add(Calendar.DAY_OF_YEAR, 30);
                     default:
                         currentActivity.newestTimestamp = newestTimestamp;
@@ -369,14 +358,8 @@ public class VisualizationsActivity extends AppActivity {
         }
     }
 
-    /**
-     * Refreshes the visualizations.
-     */
     private void refreshVisualization() {
-        ParentVisualization tileVis = (ParentVisualization) findViewById(R.id.tileVisualization);
-        tileVis.refreshLocations();
-
-        ParentVisualization barVis = (ParentVisualization) findViewById(R.id.barVisualization);
-        barVis.refreshLocations();
+        //Fragment currentFragment = viewPageAdapter.getItem(pager.getCurrentItem());
+        viewPageAdapter.notifyDataSetChanged();
     }
 }

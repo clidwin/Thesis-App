@@ -23,7 +23,7 @@ import java.util.Calendar;
  * Custom dialog for modifying the dates and times shown in the visualization.
  *
  * @author Christina Lidwin
- * @version July 15, 2015
+ * @version July 7, 2015
  */
 public class DateTimeDialogFragment extends DialogFragment {
     protected static final String TAG = "vi-dialog-datetime";
@@ -287,8 +287,7 @@ public class DateTimeDialogFragment extends DialogFragment {
 
             // Auto-update from fields if the FromDate/Time options are disabled
             if (!timeInterval.equals(VisualizationsActivity.TimeInterval.CUSTOM)) {
-                oldestTimestamp = Calendar.getInstance();
-                oldestTimestamp.setTimeInMillis(newestTimestamp.getTime().getTime());
+                oldestTimestamp = newestTimestamp;
                 oldestTimestamp.add(Calendar.DAY_OF_YEAR, 0 - timeInterval.value);
 
                 oldDate.setDate(oldestTimestamp.getTime());
@@ -312,8 +311,7 @@ public class DateTimeDialogFragment extends DialogFragment {
 
                 // Auto-update from fields if the FromDate/Time options are disabled
                 if (!timeInterval.equals(VisualizationsActivity.TimeInterval.CUSTOM)) {
-                    oldestTimestamp = Calendar.getInstance();
-                    oldestTimestamp.setTimeInMillis(newestTimestamp.getTime().getTime());
+                    oldestTimestamp = newestTimestamp;
                     oldestTimestamp.add(Calendar.DAY_OF_YEAR, 0 - timeInterval.value);
 
                     oldDate.setDate(oldestTimestamp.getTime());

@@ -5,10 +5,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import com.clidwin.android.visualimprints.fragments.BarChartVisualizationFragment;
 import com.clidwin.android.visualimprints.fragments.MapViewFragment;
 import com.clidwin.android.visualimprints.fragments.TileVisualizationFragment;
-import com.clidwin.android.visualimprints.visualizations.TileVisualization;
 
 /**
  * Manages the fragment views within an activity.
@@ -16,7 +14,7 @@ import com.clidwin.android.visualimprints.visualizations.TileVisualization;
  * Source:
  *     http://www.android4devs.com/2015/01/how-to-make-material-design-sliding-tabs.html
  *
- * @version July 15, 2015
+ * @version January 21, 2015
  */
 public class ViewPagerAdapter extends FragmentStatePagerAdapter {
 
@@ -39,13 +37,10 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
                 fragment = TileVisualizationFragment.newInstance(context);
                 break;
             case 1:
-                fragment = BarChartVisualizationFragment.newInstance(context);
-                break;
-            case 2:
                 fragment = new MapViewFragment();
                 break;
             default:
-                fragment = TileVisualizationFragment.newInstance(context);
+                fragment = new MapViewFragment();
         }
         return fragment;
     }

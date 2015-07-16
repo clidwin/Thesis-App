@@ -3,15 +3,11 @@ package com.clidwin.android.visualimprints.fragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.activities.VisualizationsActivity;
-import com.clidwin.android.visualimprints.location.GeospatialPin;
-import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -19,13 +15,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.ArrayList;
-
 /**
  * View to display a Google map with location information.
  *
  * @author Christina Lidwin
- * @version July 15, 2015
+ * @version May 14, 2015
  */
 public class MapViewFragment extends Fragment {
     protected static final String TAG = "visual-imprints-map";
@@ -42,6 +36,7 @@ public class MapViewFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
         if (mMap != null)
             setUpMap();
 
@@ -73,9 +68,7 @@ public class MapViewFragment extends Fragment {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getChildFragmentManager()
-                    .findFragmentById(R.id.map))
-                    .getMap();
+            mMap = ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map)).getMap(); // getMap is deprecated
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
                 setUpMap();
@@ -91,28 +84,7 @@ public class MapViewFragment extends Fragment {
      */
     private void setUpMap() {
         mMap.setMyLocationEnabled(true);
-
-        VisualizationsActivity activity = (VisualizationsActivity) getActivity();
-        if (activity != null) {
-            ArrayList<GeospatialPin> locations;
-            locations = activity.getDatabaseAdapter().getEntriesInDateRange(
-                    activity.getOldestTimestamp(), activity.getNewestTimestamp());
-
-            for(GeospatialPin pin: locations) {
-                mMap.addMarker(new MarkerOptions()
-                        .position(
-                                new LatLng(pin.getLocation().getLatitude(), pin.getLocation().getLongitude()))
-                        .title(pin.getArrivalTime().toString()));
-            }
-            if (locations.size() != 0) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(
-                                locations.get(0).getLocation().getLatitude(),
-                                locations.get(0).getLocation().getLongitude()),
-                        12.0f));
-            }
-        } else {
-            Log.e(TAG, "Database disconnected");
-        }
+        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0,0), 12.0f));
     }
 }
