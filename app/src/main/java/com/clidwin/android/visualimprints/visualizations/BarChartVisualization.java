@@ -25,6 +25,7 @@ public class BarChartVisualization extends ParentVisualization {
     private static final String TAG = "visualimprints-bar-vis";
 
     private Paint mFillPaint;
+    private Paint mTextPaint;
     private RectF drawingRect;
 
     private int [] barInfo;
@@ -57,8 +58,6 @@ public class BarChartVisualization extends ParentVisualization {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-
-
     }
 
     /**
@@ -67,6 +66,9 @@ public class BarChartVisualization extends ParentVisualization {
     private void initializePaints() {
         mFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mFillPaint.setColor(Color.LTGRAY);
+
+        mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mTextPaint.setColor(Color.BLACK);
     }
 
     @Override
@@ -103,7 +105,15 @@ public class BarChartVisualization extends ParentVisualization {
                     canvas.getHeight() - (cellHeight * barInfo[i]),
                     cellWidth * (i + 1),
                     canvas.getHeight());
+
+
             canvas.drawRect(drawingRect, mFillPaint);
+            canvas.drawText(
+                    "" + barInfo[i],
+                    (float) (cellWidth * (i + 0.5)),
+                    canvas.getHeight() - (cellHeight * barInfo[i]),
+                    mTextPaint
+            );
             colorReverse = !colorReverse;
         }
     }

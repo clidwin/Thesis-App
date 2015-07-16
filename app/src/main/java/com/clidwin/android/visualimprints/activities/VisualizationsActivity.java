@@ -3,21 +3,23 @@ package com.clidwin.android.visualimprints.activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.fragments.DateTimeDialogFragment;
-import com.clidwin.android.visualimprints.fragments.VisualizationFragment;
 import com.clidwin.android.visualimprints.layout.ViewPagerAdapter;
 import com.clidwin.android.visualimprints.ui.DateSelector;
 import com.clidwin.android.visualimprints.visualizations.ParentVisualization;
@@ -175,7 +177,7 @@ public class VisualizationsActivity extends AppActivity {
     private void setupIconTray() {
         //TODO(clidwin): Replace all listeners with feature-ready content.
 
-        ImageButton rawDataButton = (ImageButton) findViewById(R.id.icon_tray_raw_data);
+        /*ImageButton rawDataButton = (ImageButton) findViewById(R.id.icon_tray_raw_data);
         rawDataButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -197,6 +199,34 @@ public class VisualizationsActivity extends AppActivity {
             public void onClick(View v) {
                 showParametersDialog();
             }
+        });*/
+
+        CardView rawDataCard = (CardView) findViewById(R.id.bar_raw_data);
+        rawDataCard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openRawData();
+            }
+        });
+
+        FloatingActionButton tuneFab =
+                (FloatingActionButton) findViewById(R.id.floating_action_button_tune);
+        tuneFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showParametersDialog();
+            }
+        });
+
+        FloatingActionButton screenshotFab =
+                (FloatingActionButton) findViewById(R.id.floating_action_button_screenshot);
+        screenshotFab.setBackgroundTintList(
+                ColorStateList.valueOf(getResources().getColor(R.color.white)));
+        screenshotFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buildAndShowDialog();
+            }
         });
     }
 
@@ -209,10 +239,10 @@ public class VisualizationsActivity extends AppActivity {
     /**
      * Creates a dialog that alerts the user a feature is unavailable.
      */
-    private void buildAndShowDialog(){
+    private void buildAndShowDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Feature Unavailable")
-               .setMessage("This feature is coming soon.")
+                .setMessage("This feature is coming soon.")
                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {
                        // Do nothing

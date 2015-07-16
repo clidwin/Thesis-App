@@ -60,4 +60,5 @@
     <string name="dialog_daterange_radiobutton_month">Month</string>
     <string name="dialog_daterange_radiobutton_day">Day</string>
     <string name="dialog_daterange_radiobutton_custom">Custom</string>
+    <string name="view_raw_data">View Raw Data</string>
 </resources>

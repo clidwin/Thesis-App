@@ -13,4 +13,5 @@
     <item name="fragmentVisualization" type="id">fragmentVisualization</item>
     <item name="tileVisualization" type="id">tileVisualization</item>
     <item name="barVisualization" type="id">barVisualization</item>
+    <item name="image_raw_data" type="id">image_raw_data</item>
 </resources>
