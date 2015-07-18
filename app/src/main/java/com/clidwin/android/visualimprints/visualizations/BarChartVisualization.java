@@ -73,6 +73,7 @@ public class BarChartVisualization extends ParentVisualization {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        //TODO(clidwin): figure out why this draws slowest.
         super.onDraw(canvas);
 
         if (maxBarHeight == 0) {

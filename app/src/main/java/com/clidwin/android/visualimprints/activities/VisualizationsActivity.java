@@ -10,16 +10,15 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.fragments.DateTimeDialogFragment;
+import com.clidwin.android.visualimprints.layout.SlidingTabLayout;
 import com.clidwin.android.visualimprints.layout.ViewPagerAdapter;
 import com.clidwin.android.visualimprints.ui.DateSelector;
 import com.clidwin.android.visualimprints.visualizations.ParentVisualization;
@@ -55,6 +54,7 @@ public class VisualizationsActivity extends AppActivity {
     private boolean mShouldLiveUpdate;
 
     private OnModifyListener mOnModifyListener;
+    private SlidingTabLayout tabs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +71,12 @@ public class VisualizationsActivity extends AppActivity {
         pager.setAdapter(viewPageAdapter);
         pager.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+
+        // Assiging the Sliding Tab Layout View
+        tabs = (SlidingTabLayout) findViewById(R.id.visualization_tabs);
+        tabs.setDistributeEvenly(true); // To make the Tabs Fixed set this true, This makes the tabs Space Evenly in Available width
+        tabs.setCustomTabView(R.layout.tab_image_and_text, R.id.tab_text);
+        tabs.setViewPager(pager);
 
         // Configuring autohide options on the menus
         /*decorView = getWindow().getDecorView();
@@ -115,6 +121,8 @@ public class VisualizationsActivity extends AppActivity {
             updateCalendarsLive();
         }
     }
+
+    public ViewPager getPager() { return pager; }
 
     /**
      * Update the Calendar objects for the oldest and newest timestamp based on a pre-determined
@@ -175,33 +183,7 @@ public class VisualizationsActivity extends AppActivity {
      * Creates the icon menu items at the bottom of visualizations.
      */
     private void setupIconTray() {
-        //TODO(clidwin): Replace all listeners with feature-ready content.
-
-        /*ImageButton rawDataButton = (ImageButton) findViewById(R.id.icon_tray_raw_data);
-        rawDataButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openRawData();
-            }
-        });
-
-        ImageButton saveViewButton = (ImageButton) findViewById(R.id.icon_tray_save_view);
-        saveViewButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                buildAndShowDialog();
-            }
-        });
-
-        ImageButton viewParamsButton = (ImageButton) findViewById(R.id.icon_tray_view_parameters);
-        viewParamsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showParametersDialog();
-            }
-        });*/
-
-        CardView rawDataCard = (CardView) findViewById(R.id.bar_raw_data);
+        LinearLayout rawDataCard = (LinearLayout) findViewById(R.id.bar_raw_data);
         rawDataCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -214,6 +196,7 @@ public class VisualizationsActivity extends AppActivity {
         tuneFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //TODO(clidwin): Replace with screenshot & share
                 showParametersDialog();
             }
         });
@@ -232,7 +215,7 @@ public class VisualizationsActivity extends AppActivity {
 
     private void openRawData() {
         Intent intent = new Intent(this, RawDataActivity.class);
-        //TODO(clidwin): add any extra data to the intent
+        //TODO(clidwin): add old and new timestamp information
         startActivity(intent);
     }
 
