@@ -196,21 +196,21 @@ public class VisualizationsActivity extends AppActivity {
         tuneFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO(clidwin): Replace with screenshot & share
                 showParametersDialog();
             }
         });
 
-        FloatingActionButton screenshotFab =
+        /*FloatingActionButton screenshotFab =
                 (FloatingActionButton) findViewById(R.id.floating_action_button_screenshot);
         screenshotFab.setBackgroundTintList(
                 ColorStateList.valueOf(getResources().getColor(R.color.white)));
         screenshotFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //TODO(clidwin): Replace with screenshot & share
                 buildAndShowDialog();
             }
-        });
+        });*/
     }
 
     private void openRawData() {

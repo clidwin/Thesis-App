@@ -1,23 +1,15 @@
 package com.clidwin.android.visualimprints.ui;
 
-import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.res.Resources;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.DatePicker;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import com.clidwin.android.visualimprints.Constants;
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.activities.VisualizationsActivity;
-import com.clidwin.android.visualimprints.fragments.DateTimeDialogFragment;
-import com.clidwin.android.visualimprints.layout.SlidingTabLayout;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Custom view that houses the SlidingLayoutTab
@@ -27,20 +19,25 @@ import java.util.Date;
  */
 public class VisualizationsDrawer extends LinearLayout {
 
+    boolean isExpanded;
+
     public VisualizationsDrawer(Context context) {
         super(context);
         initializeViews(context);
+        isExpanded = false;
     }
 
     public VisualizationsDrawer(Context context, AttributeSet attrs) {
         super(context, attrs);
         initializeViews(context);
+        isExpanded = false;
 
     }
 
     public VisualizationsDrawer(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         initializeViews(context);
+        isExpanded = false;
     }
 
     /**
@@ -54,11 +51,45 @@ public class VisualizationsDrawer extends LinearLayout {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.drawer_visualizations, this);
 
-        //TODO(clidwin): Implement sliding animation so the drawer "opens" and "shuts"
+        View toggleCircle = findViewById(R.id.drawer_toggle_circle);
+        toggleCircle.setOnClickListener(new DrawerToggleListener());
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+    }
+
+    public class DrawerToggleListener implements OnClickListener {
+
+        public DrawerToggleListener() { super(); }
+
+        @Override
+        public void onClick(View v) {
+            View drawer = findViewById(R.id.drawer);
+            ImageView toggleIcon = (ImageView) findViewById(R.id.drawer_toggle_icon);
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+
+            //TODO(clidwin): Animate transition (slide effect) and arrow rotation
+            if (isExpanded) {
+                int marginTop = (int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, -72, getResources().getDisplayMetrics());
+                lp.setMargins(0, marginTop, 0, 0);
+
+                toggleIcon.setImageResource(R.drawable.ic_expand_more_black_24dp);
+
+            } else {
+                lp.setMargins(0, 0, 0, 0);
+                toggleIcon.setImageResource(R.drawable.ic_expand_less_black_24dp);
+            }
+
+            drawer.setLayoutParams(lp);
+            drawer.setClickable(!isExpanded);
+            isExpanded = !isExpanded;
+        }
     }
 }

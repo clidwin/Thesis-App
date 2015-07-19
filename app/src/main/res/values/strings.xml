@@ -61,4 +61,5 @@
     <string name="dialog_daterange_radiobutton_day">Day</string>
     <string name="dialog_daterange_radiobutton_custom">Custom</string>
     <string name="view_raw_data">View Raw Data</string>
+    <string name="drawer_icon_description">Arrow indicating the direction of motion when clicked.</string>
 </resources>

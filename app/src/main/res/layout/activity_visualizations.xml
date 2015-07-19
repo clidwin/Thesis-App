@@ -7,14 +7,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:layout_marginTop="56dp"
+        android:layout_marginBottom="@dimen/raw_data_bar_height"
+        android:layout_marginTop="@dimen/default_text_line_space_extra_half"
         android:orientation="vertical">
 
         <android.support.v4.view.ViewPager
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="-28dp"
             android:layout_weight="1" />
 
     </LinearLayout>
@@ -23,19 +23,9 @@
         android:id="@+id/bar_raw_data"
         android:background="@color/white"
         android:layout_alignParentBottom="true"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/raw_data_bar_height"
         android:layout_width="match_parent"
         android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@id/image_raw_data"
-            android:layout_width="24dp"
-            android:layout_height="fill_parent"
-            android:adjustViewBounds="true"
-            android:background="@null"
-            android:contentDescription="@string/icon_tray_save_view_desc"
-            android:gravity="center_horizontal|center_vertical"
-            android:src="@drawable/ic_action_refresh" />
 
         <TextView
             android:gravity="center_vertical|start"
@@ -56,13 +46,13 @@
         android:layout_alignParentEnd="true"
         android:orientation="vertical">
 
-        <android.support.design.widget.FloatingActionButton
+        <!--<android.support.design.widget.FloatingActionButton
             android:id="@+id/floating_action_button_screenshot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/space_between_content_areas"
             android:layout_marginBottom="@dimen/space_two_floating_action_buttons"
-            android:src="@drawable/ic_close_white_24dp"/>
+            android:src="@drawable/ic_close_white_24dp"/> !-->
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/floating_action_button_tune"
