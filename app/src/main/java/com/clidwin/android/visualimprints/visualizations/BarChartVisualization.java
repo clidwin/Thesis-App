@@ -81,19 +81,13 @@ public class BarChartVisualization extends ParentVisualization {
         }
 
         // Paint the background.
-        mFillPaint.setColor(Color.LTGRAY);
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), mFillPaint);
 
         float cellWidth = canvas.getWidth() / 24;
         float cellHeight = canvas.getHeight() / maxBarHeight;
 
-        float secondIncrementWidth = cellWidth /3600000;
-
-        Log.e(TAG, "interval width: " + secondIncrementWidth * 30);
-
         boolean colorReverse = false;
-
-        for (int i=0; i< barInfo.length; i++) {
+        for (int i=0; i< barInfo.length; i++, colorReverse = !colorReverse) {
             // Select color.
             int color = colorReverse ?
                     getResources().getColor(R.color.green_200) :
@@ -106,16 +100,15 @@ public class BarChartVisualization extends ParentVisualization {
                     canvas.getHeight() - (cellHeight * barInfo[i]),
                     cellWidth * (i + 1),
                     canvas.getHeight());
-
-
             canvas.drawRect(drawingRect, mFillPaint);
+
+            // Draw bar label
             canvas.drawText(
                     "" + barInfo[i],
                     (float) (cellWidth * (i + 0.5)),
                     canvas.getHeight() - (cellHeight * barInfo[i]),
                     mTextPaint
             );
-            colorReverse = !colorReverse;
         }
     }
 
