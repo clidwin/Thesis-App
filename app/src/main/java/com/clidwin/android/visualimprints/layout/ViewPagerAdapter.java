@@ -1,10 +1,15 @@
 package com.clidwin.android.visualimprints.layout;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
 
+import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.fragments.BarChartVisualizationFragment;
 import com.clidwin.android.visualimprints.fragments.MapViewFragment;
 import com.clidwin.android.visualimprints.fragments.TileVisualizationFragment;

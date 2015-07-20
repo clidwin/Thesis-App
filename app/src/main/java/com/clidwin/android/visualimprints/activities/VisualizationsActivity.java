@@ -74,9 +74,11 @@ public class VisualizationsActivity extends AppActivity {
 
         // Assiging the Sliding Tab Layout View
         tabs = (SlidingTabLayout) findViewById(R.id.visualization_tabs);
-        tabs.setDistributeEvenly(true); // To make the Tabs Fixed set this true, This makes the tabs Space Evenly in Available width
+        tabs.setDistributeEvenly(true);
         tabs.setCustomTabView(R.layout.tab_image_and_text, R.id.tab_text);
         tabs.setViewPager(pager);
+
+
 
         // Configuring autohide options on the menus
         /*decorView = getWindow().getDecorView();

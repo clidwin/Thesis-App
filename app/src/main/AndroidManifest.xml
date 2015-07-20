@@ -16,8 +16,8 @@ limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.clidwin.android.visualimprints"
-    android:versionCode="2"
-    android:versionName="1.5.1" >
+    android:versionCode="3"
+    android:versionName="2.5" >
 
     <!--
     Android has two location request settings: {@code ACCESS_COARSE_LOCATION} and

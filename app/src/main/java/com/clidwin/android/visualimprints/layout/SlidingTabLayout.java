@@ -24,6 +24,7 @@ import android.graphics.Typeface;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -31,8 +32,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.clidwin.android.visualimprints.R;
 
 /**
  * To be used with ViewPager to provide a tab indicator component which give constant feedback as to
@@ -214,12 +218,30 @@ public class SlidingTabLayout extends HorizontalScrollView {
                 lp.width = 0;
                 lp.weight = 1;
             }
+
             tabTitleView.setText(adapter.getPageTitle(i));
             tabView.setOnClickListener(tabClickListener);
             String desc = mContentDescriptions.get(i, null);
             if (desc != null) {
                 tabView.setContentDescription(desc);
             }
+
+            // Start clidwin code
+            if (tabView.findViewById(R.id.tab_image) != null) {
+                Log.e("slidingtablayout", "found a tab image for " + tabTitleView.getText());
+                ImageView imageView = (ImageView) tabView.findViewById(R.id.tab_image);
+
+                if (tabTitleView.getText().toString().equals("Tile")) {
+                    Log.e("slidingtablayout", "setting tile image");
+                    imageView.setImageResource(R.drawable.ic_view_compact_black_36dp);
+                } else if (tabTitleView.getText().toString().equals("Bar")) {
+                    Log.e("slidingtablayout", "setting bar image");
+                    imageView.setImageResource(R.drawable.ic_equalizer_black_36dp);
+                }
+                //TODO(clidwin): Add cases for other two visualizations
+            }
+            tabTitleView.setText(tabTitleView.getText().toString());
+            // End clidwin code
 
             mTabStrip.addView(tabView);
             if (i == mViewPager.getCurrentItem()) {
