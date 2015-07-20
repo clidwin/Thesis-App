@@ -1,7 +1,6 @@
 package com.clidwin.android.visualimprints.ui;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;

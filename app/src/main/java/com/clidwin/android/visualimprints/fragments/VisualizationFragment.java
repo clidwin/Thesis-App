@@ -1,7 +1,6 @@
 package com.clidwin.android.visualimprints.fragments;
 
 import android.support.v4.app.Fragment;
-import android.view.View;
 
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.visualizations.ParentVisualization;

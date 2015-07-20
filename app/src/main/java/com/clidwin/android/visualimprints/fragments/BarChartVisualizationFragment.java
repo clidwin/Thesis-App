@@ -3,13 +3,11 @@ package com.clidwin.android.visualimprints.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.visualizations.ParentVisualization;
 
 /**
  * View to display a test fragment.

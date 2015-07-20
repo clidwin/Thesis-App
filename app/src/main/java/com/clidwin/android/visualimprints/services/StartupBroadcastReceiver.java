@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.clidwin.android.visualimprints.services.GpsLocationService;
-
 /**
  *  Called when the device is turned on, this class initializes the GpsLocationService.
  *

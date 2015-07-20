@@ -228,14 +228,11 @@ public class SlidingTabLayout extends HorizontalScrollView {
 
             // Start clidwin code
             if (tabView.findViewById(R.id.tab_image) != null) {
-                Log.e("slidingtablayout", "found a tab image for " + tabTitleView.getText());
                 ImageView imageView = (ImageView) tabView.findViewById(R.id.tab_image);
 
                 if (tabTitleView.getText().toString().equals("Tile")) {
-                    Log.e("slidingtablayout", "setting tile image");
                     imageView.setImageResource(R.drawable.ic_view_compact_black_36dp);
                 } else if (tabTitleView.getText().toString().equals("Bar")) {
-                    Log.e("slidingtablayout", "setting bar image");
                     imageView.setImageResource(R.drawable.ic_equalizer_black_36dp);
                 }
                 //TODO(clidwin): Add cases for other two visualizations

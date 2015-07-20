@@ -8,7 +8,6 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.os.SystemClock;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -24,9 +23,7 @@ import android.widget.Toast;
 
 import com.clidwin.android.visualimprints.Constants;
 import com.clidwin.android.visualimprints.R;
-import com.clidwin.android.visualimprints.VisualImprintsApplication;
 import com.clidwin.android.visualimprints.location.GeospatialPin;
-import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 
 import java.text.DateFormat;
 import java.text.ParseException;

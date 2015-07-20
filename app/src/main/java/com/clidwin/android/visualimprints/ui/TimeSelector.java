@@ -1,6 +1,5 @@
 package com.clidwin.android.visualimprints.ui;
 
-import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.util.AttributeSet;

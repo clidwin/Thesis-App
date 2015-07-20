@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.activities.VisualizationsActivity;
 import com.clidwin.android.visualimprints.location.GeospatialPin;
-import com.clidwin.android.visualimprints.storage.DatabaseAdapter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
