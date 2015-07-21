@@ -86,7 +86,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/coordinates_longitude_label"
-                    android:text="@string/arrival_time_label"
+                    android:text="@string/recorded_time_label"
                     android:textSize="@dimen/default_text_size"
                     android:paddingEnd="4sp"
                     android:textColor="#ff585858" />

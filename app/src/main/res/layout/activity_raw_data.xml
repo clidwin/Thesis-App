@@ -35,7 +35,7 @@
                         android:text="@string/last_location_label"
                         android:textSize="@dimen/title_text_size"/>
 
-                    <TextView
+                    <!--<TextView
                         android:id="@+id/last_updated_label"
                         android:layout_below="@+id/last_location_label"
                         android:layout_width="wrap_content"
@@ -43,11 +43,21 @@
                         android:text="@string/last_updated_label"
                         android:textSize="@dimen/default_text_size"
                         android:paddingBottom="16sp"
-                        android:textColor="#ff808080" />
+                        android:textColor="#ff808080" />-->
+
+                    <TextView
+                        android:id="@+id/last_arrival_time_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/last_location_label"
+                        android:text="@string/recorded_time_label"
+                        android:textSize="@dimen/default_text_size"
+                        android:paddingEnd="4sp"
+                        android:textColor="#ff585858" />
 
                     <TextView
                         android:id="@+id/coordinates_latitude_label"
-                        android:layout_below="@+id/last_updated_label"
+                        android:layout_below="@+id/last_arrival_time_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/coordinates_latitude_label"
@@ -65,20 +75,9 @@
                         android:paddingEnd="4sp"
                         android:textColor="#ff585858" />
 
-
-                    <TextView
-                        android:id="@+id/last_arrival_time_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/coordinates_longitude_label"
-                        android:text="@string/arrival_time_label"
-                        android:textSize="@dimen/default_text_size"
-                        android:paddingEnd="4sp"
-                        android:textColor="#ff585858" />
-
                     <TextView
                         android:id="@+id/duration_label"
-                        android:layout_below="@+id/last_arrival_time_label"
+                        android:layout_below="@+id/coordinates_longitude_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/duration_label"

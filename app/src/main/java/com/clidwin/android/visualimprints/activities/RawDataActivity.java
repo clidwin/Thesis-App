@@ -256,7 +256,7 @@ public class RawDataActivity extends AppActivity {
         // Arrival Date and Time
         TextView arrivalTimeView = new TextView(this);
         arrivalTimeView.setLayoutParams(lp);
-        arrivalTimeView.setText(getResources().getText(R.string.arrival_time_label));
+        arrivalTimeView.setText(getResources().getText(R.string.recorded_time_label));
         arrivalTimeView.setTextSize(
                 TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.default_text_size));
         arrivalTimeView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
