@@ -43,7 +43,7 @@ public class VisualizationsActivity extends AppActivity {
     ViewPagerAdapter viewPageAdapter;
 
     //TODO(clidwin): Make this dynamically find visualizations
-    CharSequence titles[]={"Tile", "Bar", "Map"};
+    CharSequence titles[]={"Tile", "Bar", "Voronoi", "Map"};
 
     private boolean mIsLargeLayout;
 

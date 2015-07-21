@@ -19,7 +19,7 @@
     <string name="address_label">Address: </string>
     <string name="all_locations_label">All Locations</string>
     <string name="app_name">Data Atlas</string>
-    <string name="arrival_time_label">Arrival: </string>
+    <string name="recorded_time_label">Recorded: </string>
     <string name="coordinates_latitude_label">Latitude: </string>
     <string name="coordinates_longitude_label">Longitude: </string>
     <string name="duration_label">Duration: </string>
@@ -45,6 +45,7 @@
     <string name="icon_tray_modify_params_desc">Modify the parameters for the visualization</string>
     <string name="tag_fragment_bar_chart_visualization">fragment_bar_chart_visualization</string>
     <string name="tag_fragment_tile_visualization">fragment_tile_visualization</string>
+    <string name="tag_fragment_voronoi_visualization">fragment_voronoi_visualization</string>
     <string name="title_activity_raw_data">Raw Data</string>
 
     <string name="hello_world">Hello world!</string>

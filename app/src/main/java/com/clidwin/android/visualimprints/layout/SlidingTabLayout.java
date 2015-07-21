@@ -234,6 +234,8 @@ public class SlidingTabLayout extends HorizontalScrollView {
                     imageView.setImageResource(R.drawable.ic_view_compact_black_36dp);
                 } else if (tabTitleView.getText().toString().equals("Bar")) {
                     imageView.setImageResource(R.drawable.ic_equalizer_black_36dp);
+                } else if (tabTitleView.getText().toString().equals("Voronoi")) {
+                    imageView.setImageResource(R.drawable.ic_dashboard_black_36dp);
                 }
                 //TODO(clidwin): Add cases for other two visualizations
             }
