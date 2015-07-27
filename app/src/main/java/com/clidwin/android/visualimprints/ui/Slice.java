@@ -7,21 +7,21 @@ import com.clidwin.android.visualimprints.location.GeospatialPin;
 import java.util.GregorianCalendar;
 
 /**
- * Wrapper for the data in a single tile element for the TileVisualization.
+ * Wrapper for the data in a single slice/location element for the TileVisualization.
  *
  * @author clidwin
- * @version July 15, 2015
+ * @version July 21, 2015
  */
-public class Tile {
+public class Slice {
     private RectF rect;
     private boolean rectangleIsSet;
     private GeospatialPin pin;
 
-    public Tile(GeospatialPin pin) {
+    public Slice(GeospatialPin pin) {
         this(pin, new RectF(), false);
     }
 
-    public Tile(GeospatialPin pin, RectF rect, boolean rectangleIsSet) {
+    public Slice(GeospatialPin pin, RectF rect, boolean rectangleIsSet) {
         this.pin = pin;
         this.rect = rect;
         this.rectangleIsSet = rectangleIsSet;

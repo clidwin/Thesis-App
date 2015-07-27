@@ -40,7 +40,6 @@ public abstract class ParentVisualization extends View {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-
         refreshLocations();
     }
 
@@ -94,6 +93,7 @@ public abstract class ParentVisualization extends View {
             DatabaseAdapter dbAdapter = activity.getDatabaseAdapter();
             visualizationLocations = dbAdapter.getEntriesInDateRange(
                     activity.getOldestTimestamp(), activity.getNewestTimestamp());
+            //TODO(clidwin): let children know what time range & timestamps are being covered here.
             Log.e(TAG, "Number of locations: " + visualizationLocations.size());
             for(GeospatialPin pin: visualizationLocations) {
                 processPin(pin);

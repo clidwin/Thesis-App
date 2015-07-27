@@ -5,27 +5,19 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
+import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import android.widget.TextView;
 
-import com.clidwin.android.visualimprints.Constants;
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.location.GeospatialPin;
-import com.clidwin.android.visualimprints.ui.Tile;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Visualization for locational data based on a tile/grid structure.
@@ -34,11 +26,18 @@ import java.util.concurrent.TimeUnit;
  * @version July 15, 2015
  */
 public class VoronoiVisualization extends ParentVisualization {
-    private static final String TAG = "visualimprints-tile-vis";
+    private static final String TAG = "vi-voronoi-vis";
 
     private Paint mFillPaint;
 
     private PopupWindow popUp;
+
+    private ArrayList<PointF> allPoints;
+
+    private float minX;
+    private float maxX;
+    private float minY;
+    private float maxY;
 
     //TODO(clidwin): Handle week and month view setups.
     public VoronoiVisualization(Context context, AttributeSet attributes) {
@@ -46,11 +45,29 @@ public class VoronoiVisualization extends ParentVisualization {
 
         initializePaints();
         popUp = new PopupWindow();
+
+        allPoints = new ArrayList<>();
+
+        minX = 180;
+        maxX = 0;
+        minY = 360;
+        maxY = 0;
     }
 
     @Override
     protected void processPin(GeospatialPin pin) {
-        //TODO(clidwin): Implement
+        //TODO(clidwin): Base off time rather than location
+        Location location = pin.getLocation();
+        PointF newPoint = new PointF(
+                90 + (float)location.getLatitude(),
+                180 + (float)location.getLongitude());
+
+        allPoints.add(newPoint);
+
+        if (newPoint.x < minX) { minX = newPoint.x; }
+        if (newPoint.x > maxX) { maxX = newPoint.x; }
+        if (newPoint.y < minY) { minY = newPoint.y; }
+        if (newPoint.y > maxY) { maxY = newPoint.y; }
     }
 
     /**
@@ -69,12 +86,42 @@ public class VoronoiVisualization extends ParentVisualization {
 
         // Paint the background.
         mFillPaint.setColor(Color.LTGRAY);
-        canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), mFillPaint);
+        //canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), mFillPaint);
+        Drawable bg = getResources().getDrawable(R.drawable.voronoi);
+        bg.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        bg.draw(canvas);
 
+        float width = canvas.getWidth();
+        float height = canvas.getHeight();
+
+        float xDivider = (Math.abs(maxX - minX));
+        float yDivider = (Math.abs(maxY - minY));
+
+        // Draw all data points
         mFillPaint.setColor(getResources().getColor(R.color.black));
-        mFillPaint.setTextSize((int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
-        canvas.drawText("Visualization coming soon", 50, 150, mFillPaint);
+
+        ArrayList<PointF> voronoiPoints = new ArrayList<>();
+        for (int i = 0; i < allPoints.size(); i++) {
+            PointF point = allPoints.get(i);
+            canvas.drawCircle(
+                    ((point.x - minX)/xDivider)*width,
+                    ((point.y - minY)/yDivider)*height,
+                    3.0f,
+                    mFillPaint);
+
+            voronoiPoints.add(new PointF(
+                    ((point.x - minX)/xDivider)*width,
+                    ((point.y - minY)/yDivider)*height
+            ));
+        }
+
+        //TODO(clidwin): Fortune's algorithm to draw edges
+
+        //Log.e(TAG, "Number of edges: " + voronoi.getEdgeList().size());
+
+        /*mFillPaint.setTextSize((int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 14, getResources().getDisplayMetrics()));
+        canvas.drawText("Visualization coming soon.", 50, 150, mFillPaint);*/
     }
 
     @Override

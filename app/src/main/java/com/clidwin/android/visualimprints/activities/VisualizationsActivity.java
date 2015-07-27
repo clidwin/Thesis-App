@@ -387,7 +387,7 @@ public class VisualizationsActivity extends AppActivity {
      * Refreshes the visualizations.
      */
     private void refreshVisualization() {
-        ParentVisualization tileVis = (ParentVisualization) findViewById(R.id.tileVisualization);
+        ParentVisualization tileVis = (ParentVisualization) findViewById(R.id.voronoiVisualization);
         tileVis.refreshLocations();
 
         ParentVisualization barVis = (ParentVisualization) findViewById(R.id.barVisualization);

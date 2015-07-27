@@ -20,9 +20,8 @@ import android.widget.TextView;
 import com.clidwin.android.visualimprints.Constants;
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.location.GeospatialPin;
-import com.clidwin.android.visualimprints.ui.Tile;
+import com.clidwin.android.visualimprints.ui.Slice;
 
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -41,7 +40,7 @@ public class TileVisualization extends ParentVisualization {
 
     private PopupWindow popUp;
 
-    private ArrayList<Tile> drawnRects;
+    private ArrayList<Slice> drawnRects;
 
     //TODO(clidwin): Handle week and month view setups.
     public TileVisualization(Context context, AttributeSet attributes) {
@@ -56,8 +55,8 @@ public class TileVisualization extends ParentVisualization {
     @Override
     protected void processPin(GeospatialPin pin) {
         //TODO(clidwin): Move some onDraw things in here
-        Tile tile = new Tile(pin);
-        drawnRects.add(tile);
+        Slice slice = new Slice(pin);
+        drawnRects.add(slice);
     }
 
     /**
@@ -86,12 +85,12 @@ public class TileVisualization extends ParentVisualization {
 
         boolean colorReverse = false;
 
-        for (Tile tile: drawnRects) {
+        for (Slice slice : drawnRects) {
             // Calculate placement
-            if (!tile.isRectangleSet()) {
-                GregorianCalendar arrivalTime = tile.getArrivalTime();
+            if (!slice.isRectangleSet()) {
+                GregorianCalendar arrivalTime = slice.getArrivalTime();
                 int hour = arrivalTime.get(GregorianCalendar.HOUR_OF_DAY);
-                long duration = tile.getDuration();
+                long duration = slice.getDuration();
 
 
                 int displayRow = (hour)/4;
@@ -105,7 +104,7 @@ public class TileVisualization extends ParentVisualization {
                     leftSide = rightSide - duration * secondIncrementWidth;
                 }
 
-                tile.setRectangle(new RectF(
+                slice.setRectangle(new RectF(
                         leftSide,
                         displayRow * hourCellHeight,
                         rightSide,
@@ -119,7 +118,7 @@ public class TileVisualization extends ParentVisualization {
             }
 
             // Draw cell.
-            canvas.drawRect(tile.getRectangle(), mFillPaint);
+            canvas.drawRect(slice.getRectangle(), mFillPaint);
             colorReverse = !colorReverse;
         }
 
@@ -182,8 +181,8 @@ public class TileVisualization extends ParentVisualization {
      * @param touchY the touch location's y coordinate
      */
     private void showLocationInfo(float touchX, float touchY) {
-        for(Tile tile : drawnRects){
-            if(tile.getRectangle().contains(touchX, touchY)) {
+        for(Slice slice : drawnRects){
+            if(slice.getRectangle().contains(touchX, touchY)) {
                 //TODO(clidwin): Create popup
                 LinearLayout popupLayout = new LinearLayout(getContext());
                 popupLayout.setOrientation(LinearLayout.VERTICAL);
@@ -200,25 +199,20 @@ public class TileVisualization extends ParentVisualization {
                         TypedValue.COMPLEX_UNIT_SP,
                         16);
                 arrivalTimeText.setText(
-                        timeFormat.format(tile.getPin().getArrivalTime().getTime()) + " record");
+                        timeFormat.format(slice.getPin().getArrivalTime().getTime()) + " record");
                 popupLayout.addView(arrivalTimeText);
 
                 // Date description.
                 SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DISPLAY_DATE_FORMAT);
                 TextView arrivalDateText = new TextView(getContext());
                 arrivalDateText.setText(
-                        "on " + dateFormat.format(tile.getPin().getArrivalTime().getTime()));
+                        "on " + dateFormat.format(slice.getPin().getArrivalTime().getTime()));
                 popupLayout.addView(arrivalDateText);
 
                 // Show duration.
                 TextView durationText = new TextView(getContext());
-                long millis = tile.getPin().getDuration();
-                durationText.setText(
-                        String.format("for %d min, %d sec",
-                                TimeUnit.MILLISECONDS.toMinutes(millis),
-                                TimeUnit.MILLISECONDS.toSeconds(millis) -
-                                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
-                        ));
+                durationText.setText("Duration: "
+                        + getDurationTimeString(slice.getPin().getDuration()));
                 popupLayout.addView(durationText);
 
                 popupLayout.setOnClickListener(new OnClickListener() {
@@ -231,9 +225,25 @@ public class TileVisualization extends ParentVisualization {
                 });
                 popUp.setContentView(popupLayout);
 
-                popUp.showAtLocation(this, Gravity.CENTER, (int)touchX, (int)touchY);
-                popUp.update((int)touchX, (int)touchY, 300, 150);
+                popUp.showAtLocation(
+                        this, Gravity.NO_GRAVITY, getWidth()/2, getHeight()/2);
+                popUp.update((int)touchX, (int)touchY, 400, 200);
             }
         }
+    }
+
+    /**
+     * Calculates and returns a human-readable version of the location duration.
+     *
+     * @param millis The duration formatted in milliseconds.
+     * @return a String-formatted version of the duration.
+     */
+    private String getDurationTimeString(long millis) {
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(hours);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis)
+                - TimeUnit.MINUTES.toSeconds(minutes) - TimeUnit.HOURS.toSeconds(hours);
+
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 }
