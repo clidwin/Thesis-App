@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -206,7 +207,7 @@ public class TileVisualization extends ParentVisualization {
                 SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DISPLAY_DATE_FORMAT);
                 TextView arrivalDateText = new TextView(getContext());
                 arrivalDateText.setText(
-                        "on " + dateFormat.format(slice.getPin().getArrivalTime().getTime()));
+                        "Arrival Time: " + dateFormat.format(slice.getPin().getArrivalTime().getTime()));
                 popupLayout.addView(arrivalDateText);
 
                 // Show duration.
@@ -214,6 +215,12 @@ public class TileVisualization extends ParentVisualization {
                 durationText.setText("Duration: "
                         + getDurationTimeString(slice.getPin().getDuration()));
                 popupLayout.addView(durationText);
+
+                Location location = slice.getPin().getLocation();
+                TextView locationText = new TextView(getContext());
+                locationText.setText("Location: ("
+                        + location.getLatitude() + ", " + location.getLongitude() + ")");
+                popupLayout.addView(locationText);
 
                 popupLayout.setOnClickListener(new OnClickListener() {
                     @Override
