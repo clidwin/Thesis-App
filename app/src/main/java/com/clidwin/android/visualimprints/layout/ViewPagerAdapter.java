@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.clidwin.android.visualimprints.fragments.BarChartVisualizationFragment;
 import com.clidwin.android.visualimprints.fragments.MapViewFragment;
+import com.clidwin.android.visualimprints.fragments.NetworkVisualizationFragment;
 import com.clidwin.android.visualimprints.fragments.TileVisualizationFragment;
 import com.clidwin.android.visualimprints.fragments.VoronoiVisualizationFragment;
 
@@ -39,12 +40,15 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
                 fragment = TileVisualizationFragment.newInstance(context);
                 break;
             case 1:
-                fragment = BarChartVisualizationFragment.newInstance(context);
+                fragment = NetworkVisualizationFragment.newInstance(context);
                 break;
             case 2:
-                fragment = VoronoiVisualizationFragment.newInstance(context);
+                fragment = BarChartVisualizationFragment.newInstance(context);
                 break;
             case 3:
+                fragment = VoronoiVisualizationFragment.newInstance(context);
+                break;
+            case 4:
                 fragment = new MapViewFragment();
                 break;
             default:

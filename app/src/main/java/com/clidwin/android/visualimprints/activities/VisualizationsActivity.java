@@ -43,7 +43,7 @@ public class VisualizationsActivity extends AppActivity {
     ViewPagerAdapter viewPageAdapter;
 
     //TODO(clidwin): Make this dynamically find visualizations
-    CharSequence titles[]={"Tile", "Bar", "Voronoi", "Map"};
+    CharSequence titles[]={"Tile", "Network", "Bar", "Voronoi", "Map"};
 
     private boolean mIsLargeLayout;
 
@@ -387,10 +387,10 @@ public class VisualizationsActivity extends AppActivity {
      * Refreshes the visualizations.
      */
     private void refreshVisualization() {
-        ParentVisualization tileVis = (ParentVisualization) findViewById(R.id.voronoiVisualization);
+        ParentVisualization tileVis = (ParentVisualization) findViewById(R.id.tileVisualization);
         tileVis.refreshLocations();
 
         ParentVisualization barVis = (ParentVisualization) findViewById(R.id.barVisualization);
-        barVis.refreshLocations();
+        //barVis.refreshLocations();
     }
 }

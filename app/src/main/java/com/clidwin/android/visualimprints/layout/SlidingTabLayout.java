@@ -236,8 +236,10 @@ public class SlidingTabLayout extends HorizontalScrollView {
                     imageView.setImageResource(R.drawable.ic_equalizer_black_36dp);
                 } else if (tabTitleView.getText().toString().equals("Voronoi")) {
                     imageView.setImageResource(R.drawable.ic_dashboard_black_36dp);
+                } else if (tabTitleView.getText().toString().equals("Network")) {
+                    imageView.setImageResource(R.drawable.ic_share_black_36dp);
                 }
-                //TODO(clidwin): Add cases for other two visualizations
+                //Otherwise use the default, which is a map icon.
             }
             tabTitleView.setText(tabTitleView.getText().toString());
             // End clidwin code
