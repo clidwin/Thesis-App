@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.clidwin.android.visualimprints.Constants;
 import com.clidwin.android.visualimprints.R;
 import com.clidwin.android.visualimprints.location.GeospatialPin;
+import com.clidwin.android.visualimprints.ui.GridCell;
 import com.clidwin.android.visualimprints.ui.Slice;
 
 import java.text.SimpleDateFormat;
@@ -38,10 +39,14 @@ public class TileVisualization extends ParentVisualization {
     private static final String TAG = "visualimprints-tile-vis";
 
     private Paint mFillPaint;
+    private Paint mOverlayPaint;
+    private Paint mHoverTextPaint;
 
     private PopupWindow popUp;
 
     private ArrayList<Slice> drawnRects;
+    private ArrayList<GridCell> gridCells;
+    private GridCell selectedCell;
 
     //TODO(clidwin): Handle week and month view setups.
     public TileVisualization(Context context, AttributeSet attributes) {
@@ -66,6 +71,15 @@ public class TileVisualization extends ParentVisualization {
     private void initializePaints() {
         mFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mFillPaint.setColor(Color.LTGRAY);
+
+        mOverlayPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mOverlayPaint.setColor(Color.BLACK);
+        mOverlayPaint.setAlpha(75);
+
+        mHoverTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mHoverTextPaint.setColor(Color.WHITE);
+        mHoverTextPaint.setTextAlign(Paint.Align.CENTER);
+        mHoverTextPaint.setTextSize(getResources().getDimensionPixelSize(R.dimen.title_text_size));
     }
 
     //TODO(clidwin): Remove the @SuppressLint and fix warning related to allocation in setRect
@@ -128,29 +142,68 @@ public class TileVisualization extends ParentVisualization {
     }
 
     /**
-     * Draws a grid to deliniate hours being shown.
+     * Draws a grid to delineate hours being shown.
      *
      * @param canvas The drawing area.
      * @param hourCellHeight The number of divisions along the Y coordinate axis
      * @param hourCellWidth The number of divisions along the X coordinate axis
      */
     private void drawGrid(Canvas canvas, float hourCellHeight, float hourCellWidth) {
-
         mFillPaint.setColor(getResources().getColor(R.color.white));
         mFillPaint.setStrokeWidth(2);
         // Draw horizontal lines.
-        for (int i=1; i<4; i++) {
+        /*for (int i=1; i<4; i++) {
             canvas.drawLine(i*hourCellWidth, 0, i*hourCellWidth, canvas.getHeight(), mFillPaint);
         }
 
         // Draw vertical lines.
         for (int i=1; i<6; i++) {
             canvas.drawLine(0, i*hourCellHeight, canvas.getWidth(), i*hourCellHeight, mFillPaint);
+        }*/
+
+        // Set up rects
+        //TODO(clidwin): Only add grid cells if this hasn't executed before
+        gridCells = new ArrayList<>();
+        for (int i=0; i<4; i++) {
+            for (int j=0; j<6; j++) {
+                GridCell newCell = new GridCell(
+                        i*hourCellWidth, j*hourCellHeight, hourCellWidth, hourCellHeight);
+                newCell.setValue(calculateHour(j, i));
+                gridCells.add(newCell);
+                canvas.drawLine(0, j*hourCellHeight, canvas.getWidth(), j*hourCellHeight, mFillPaint);
+            }
+            canvas.drawLine(i*hourCellWidth, 0, i*hourCellWidth, canvas.getHeight(), mFillPaint);
+        }
+
+        if (selectedCell != null) {
+            canvas.drawRect(
+                    selectedCell.topLeftCornerX,
+                    selectedCell.topLeftCornerY,
+                    selectedCell.topLeftCornerX + selectedCell.width,
+                    selectedCell.topLeftCornerY + selectedCell.height,
+                    mOverlayPaint);
+
+            canvas.drawText(
+                    "" + selectedCell.getValue(),
+                    selectedCell.topLeftCornerX + selectedCell.width/2,
+                    selectedCell.topLeftCornerY + selectedCell.height/2
+                            + mHoverTextPaint.getTextSize()/2,
+                    mHoverTextPaint);
         }
 
         // Draw border (for tile transitions).
         mFillPaint.setStyle(Paint.Style.STROKE);
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), mFillPaint);
+    }
+
+    private int calculateHour(int row, int column) {
+        int hour = row*4;
+        if ((row+1)%2==0) {
+            return hour + 4 - (column + 1);
+        }
+        else {
+            return hour + column;
+        }
     }
 
     @Override
@@ -164,11 +217,19 @@ public class TileVisualization extends ParentVisualization {
         switch(event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 //TODO(clidwin) Show hovered/pressed down area.
+                if (gridCells != null) {
+                    for (GridCell cell: gridCells) {
+                        if (cell.containsPoint(touchX, touchY)) {
+                            selectedCell = cell;
+                        }
+                    }
+                }
                 popUp.dismiss();
                 break;
             case MotionEvent.ACTION_UP:
                 //TODO(clidwin): Handle touching areas with no data and revamp popup
                 Log.e(TAG, "(" + touchX + ", " + touchY + ")");
+                selectedCell = null;
                 showLocationInfo(touchX, touchY);
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -184,7 +245,7 @@ public class TileVisualization extends ParentVisualization {
     private void showLocationInfo(float touchX, float touchY) {
         for(Slice slice : drawnRects){
             if(slice.getRectangle().contains(touchX, touchY)) {
-                //TODO(clidwin): Create popup
+                //TODO(clidwin): Create dynamic popup
                 LinearLayout popupLayout = new LinearLayout(getContext());
                 popupLayout.setOrientation(LinearLayout.VERTICAL);
                 popupLayout.setBackgroundColor(Color.WHITE);
