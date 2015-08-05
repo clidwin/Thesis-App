@@ -196,6 +196,12 @@ public class TileVisualization extends ParentVisualization {
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), mFillPaint);
     }
 
+    /**
+     * Calculates the hour a grid cell represents.
+     * @param row The row of the grid cell.
+     * @param column The column of the grid cell.
+     * @return the hour the grid cell represents.
+     */
     private int calculateHour(int row, int column) {
         int hour = row*4;
         if ((row+1)%2==0) {

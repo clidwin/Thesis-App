@@ -231,13 +231,13 @@ public class SlidingTabLayout extends HorizontalScrollView {
                 ImageView imageView = (ImageView) tabView.findViewById(R.id.tab_image);
 
                 if (tabTitleView.getText().toString().equals("Tile")) {
-                    imageView.setImageResource(R.drawable.ic_view_compact_black_36dp);
+                    imageView.setImageResource(R.drawable.ic_dashboard_black_24dp);
                 } else if (tabTitleView.getText().toString().equals("Bar")) {
-                    imageView.setImageResource(R.drawable.ic_equalizer_black_36dp);
-                } else if (tabTitleView.getText().toString().equals("Voronoi")) {
-                    imageView.setImageResource(R.drawable.ic_dashboard_black_36dp);
+                    imageView.setImageResource(R.drawable.ic_equalizer_black_24dp);
+                } else if (tabTitleView.getText().toString().equals("Mosaic")) {
+                    imageView.setImageResource(R.drawable.ic_voronoi_black_24dp);
                 } else if (tabTitleView.getText().toString().equals("Network")) {
-                    imageView.setImageResource(R.drawable.ic_share_black_36dp);
+                    imageView.setImageResource(R.drawable.ic_network_black_24dp);
                 }
                 //Otherwise use the default, which is a map icon.
             }
