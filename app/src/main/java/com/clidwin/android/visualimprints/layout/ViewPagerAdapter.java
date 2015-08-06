@@ -9,7 +9,7 @@ import com.clidwin.android.visualimprints.fragments.BarChartVisualizationFragmen
 import com.clidwin.android.visualimprints.fragments.MapViewFragment;
 import com.clidwin.android.visualimprints.fragments.NetworkVisualizationFragment;
 import com.clidwin.android.visualimprints.fragments.TileVisualizationFragment;
-import com.clidwin.android.visualimprints.fragments.VoronoiVisualizationFragment;
+import com.clidwin.android.visualimprints.fragments.MosaicVisualizationFragment;
 
 /**
  * Manages the fragment views within an activity.
@@ -46,7 +46,7 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
                 fragment = BarChartVisualizationFragment.newInstance(context);
                 break;
             case 3:
-                fragment = VoronoiVisualizationFragment.newInstance(context);
+                fragment = MosaicVisualizationFragment.newInstance(context);
                 break;
             case 4:
                 fragment = new MapViewFragment();

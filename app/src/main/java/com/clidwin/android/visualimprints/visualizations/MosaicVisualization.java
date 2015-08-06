@@ -25,8 +25,8 @@ import java.util.ArrayList;
  * @author Christina Lidwin (clidwin)
  * @version July 15, 2015
  */
-public class VoronoiVisualization extends ParentVisualization {
-    private static final String TAG = "vi-voronoi-vis";
+public class MosaicVisualization extends ParentVisualization {
+    private static final String TAG = "vi-mosaic-vis";
 
     private Paint mFillPaint;
 
@@ -40,7 +40,7 @@ public class VoronoiVisualization extends ParentVisualization {
     private float maxY;
 
     //TODO(clidwin): Handle week and month view setups.
-    public VoronoiVisualization(Context context, AttributeSet attributes) {
+    public MosaicVisualization(Context context, AttributeSet attributes) {
         super(context, attributes);
 
         initializePaints();
@@ -99,13 +99,26 @@ public class VoronoiVisualization extends ParentVisualization {
 
         // Draw all data points
         mFillPaint.setColor(getResources().getColor(R.color.black));
+        mFillPaint.setAlpha(125);
 
-        ArrayList<PointF> voronoiPoints = new ArrayList<>();
+        canvas.drawRect(0, canvas.getHeight() / 2 - 40, canvas.getWidth(), canvas.getHeight() / 2 + 40, mFillPaint);
+
+        mFillPaint.setColor(getResources().getColor(R.color.white));
+        mFillPaint.setAlpha(255);
+        mFillPaint.setTextAlign(Paint.Align.CENTER);
+        mFillPaint.setTextSize(getResources().getDimensionPixelSize(R.dimen.default_text_size));
+
+        canvas.drawText(
+                "Sample Visualization",
+                canvas.getWidth()/2, canvas.getHeight()/2 + getResources().getDimensionPixelSize(R.dimen.default_text_size)/2, mFillPaint
+        );
+
+        /*ArrayList<PointF> voronoiPoints = new ArrayList<>();
         for (int i = 0; i < allPoints.size(); i++) {
             PointF point = allPoints.get(i);
             canvas.drawCircle(
-                    ((point.x - minX)/xDivider)*width,
-                    ((point.y - minY)/yDivider)*height,
+                    ((point.x - minX) / xDivider) * width,
+                    ((point.y - minY) / yDivider) * height,
                     3.0f,
                     mFillPaint);
 
@@ -113,7 +126,7 @@ public class VoronoiVisualization extends ParentVisualization {
                     ((point.x - minX)/xDivider)*width,
                     ((point.y - minY)/yDivider)*height
             ));
-        }
+        }*/
 
         //TODO(clidwin): Fortune's algorithm to draw edges
 

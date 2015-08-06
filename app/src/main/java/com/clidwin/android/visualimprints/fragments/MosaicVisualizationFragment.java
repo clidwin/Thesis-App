@@ -16,7 +16,7 @@ import com.clidwin.android.visualimprints.R;
  * @author Christina Lidwin
  * @version May 12, 2015
  */
-public class VoronoiVisualizationFragment extends Fragment {
+public class MosaicVisualizationFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
@@ -25,8 +25,8 @@ public class VoronoiVisualizationFragment extends Fragment {
         return view;
     }
 
-    public static VoronoiVisualizationFragment newInstance(Context context) {
-        VoronoiVisualizationFragment newFragment = new VoronoiVisualizationFragment();
+    public static MosaicVisualizationFragment newInstance(Context context) {
+        MosaicVisualizationFragment newFragment = new MosaicVisualizationFragment();
 
         Bundle args = new Bundle();
         args.putString("tag", context.getString(R.string.tag_fragment_voronoi_visualization));
