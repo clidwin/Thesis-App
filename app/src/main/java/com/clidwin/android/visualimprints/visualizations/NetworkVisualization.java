@@ -62,7 +62,7 @@ public class NetworkVisualization extends ParentVisualization {
             Slice slice = cluster.getFirstSlice();
             Location recordedLocation = slice.getPin().getLocation();
             Location newLocation = pin.getLocation();
-            int threshhold = 40;
+            int threshhold = 30;
             if (distanceBetweenLocations(recordedLocation, newLocation) < threshhold) {
                 cluster.addSlice(newSlice);
                 return;
@@ -136,17 +136,24 @@ public class NetworkVisualization extends ParentVisualization {
         //TODO(clidwin): Even out distribution
         for (Cluster c: allPoints) {
             mFillPaint.setColor(getRandomColor());
-            float centerX = (float)randomNumberGenerator.nextValue() * (width - 50) + 25;
-            float centerY = (float)randomNumberGenerator.nextValue() * (height - 50) + 25;
+            float startX = (float)randomNumberGenerator.nextValue() * (width - 50) + 75;
+            if (startX > canvas.getWidth()) {
+                startX = canvas.getWidth() - startX;
+            }
+            float startY = (float)randomNumberGenerator.nextValue() * (height - 50) + 75;
+            if (startY > canvas.getHeight()) {
+                startY = canvas.getHeight() - startY;
+            }
 
             for (Slice s: c.getSlices()) {
-                canvas.drawLine(
-                        centerX,
-                        centerY,
-                        centerX + (float)randomNumberGenerator.nextValue()*100 - 50,
-                        centerY + (float)randomNumberGenerator.nextValue()*100 - 50,
-                        mFillPaint
-                );
+
+                // (x1+(x2-x1)*r,y1+(y2-y1)*r)
+                float x1 = startX + 150*(float)randomNumberGenerator.nextValue() - 75;
+                float y1 = startY + 150*(float)randomNumberGenerator.nextValue() - 75;
+
+                canvas.drawLine(startX, startY, x1, y1, mFillPaint);
+
+                canvas.drawCircle(x1, y1, 3, mFillPaint);
             }
         }
 
